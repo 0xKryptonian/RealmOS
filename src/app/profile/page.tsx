@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useAccount, useBalance } from "wagmi"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,13 +10,9 @@ import { formatDistanceToNow } from "date-fns"
 import { Loader2, Trophy, History, Wallet, Gamepad, Calendar } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { ConnectButton } from "@rainbow-me/rainbowkit"
-import { useAuth } from "@/hooks/useAuth"
+import { HederaConnectButton } from "@/components/HederaConnectButton"
+import { useHederaWallet } from "@/contexts/HederaWalletContext"
 import { GameScoreCard } from "@/components/profile/GameScoreCard"
-import { contractAddresses } from "@/lib/contracts"
-
-// Token contract address
-const TOKEN_CONTRACT_ADDRESS = contractAddresses.tokenMint as `0x${string}`
 
 interface UserProfile {
     id: string
@@ -61,36 +56,57 @@ interface GameActivity {
 }
 
 export default function ProfilePage() {
-    const { address, isConnected } = useAccount()
-    const { isAuthenticated, isLoading: isAuthLoading, login } = useAuth()
+    const { accountId, isConnected } = useHederaWallet()
 
     const [profile, setProfile] = useState<UserProfile | null>(null)
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [gameStats, setGameStats] = useState<GameStat[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [realmBalance, setRealmBalance] = useState<string>("0.00")
+    const [isBalanceLoading, setIsBalanceLoading] = useState(false)
 
-    // Get REALM token balance
-    const { data: tokenBalance, isLoading: isBalanceLoading } = useBalance({
-        address,
-        token: TOKEN_CONTRACT_ADDRESS as `0x${string}`,
-    })
-
-    // Handle wallet authentication
+    // Fetch REALM token balance from API
     useEffect(() => {
-        if (isConnected && address && isAuthenticated) {
+        const fetchBalance = async () => {
+            if (!accountId) return;
+            
+            try {
+                setIsBalanceLoading(true);
+                const response = await fetch(`/api/hedera/account/balance?accountId=${accountId}`);
+                const data = await response.json();
+                
+                if (data.success && data.data.tokens) {
+                    const realmTokenId = process.env.NEXT_PUBLIC_REALM_TOKEN_ID;
+                    if (realmTokenId && data.data.tokens.has(realmTokenId)) {
+                        setRealmBalance(data.data.tokens.get(realmTokenId).toString());
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch balance:', error);
+            } finally {
+                setIsBalanceLoading(false);
+            }
+        };
+
+        fetchBalance();
+    }, [accountId]);
+
+    // Handle wallet connection
+    useEffect(() => {
+        if (isConnected && accountId) {
             fetchProfileData()
         }
-    }, [isConnected, address, isAuthenticated])
+    }, [isConnected, accountId])
 
     // Define fetchProfileData as a useCallback to avoid dependency issues
     const fetchProfileData = useCallback(async () => {
-        if (!isConnected || !address) return
+        if (!isConnected || !accountId) return
 
         try {
             setIsLoading(true)
 
-            // Fetch profile data
-            const profileRes = await fetch(`/api/profile?address=${address}`)
+            // Fetch profile data using Hedera account ID
+            const profileRes = await fetch(`/api/profile?accountId=${accountId}`)
             const profileData = await profileRes.json()
 
             if (profileData.user) {
@@ -98,7 +114,7 @@ export default function ProfilePage() {
             }
 
             // Fetch transactions
-            const txRes = await fetch(`/api/profile/transactions?address=${address}`)
+            const txRes = await fetch(`/api/profile/transactions?accountId=${accountId}`)
             const txData = await txRes.json()
 
             if (txData.transactions) {
@@ -106,7 +122,7 @@ export default function ProfilePage() {
             }
 
             // Fetch game stats
-            const gameRes = await fetch(`/api/profile/games?address=${address}`)
+            const gameRes = await fetch(`/api/profile/games?accountId=${accountId}`)
             const gameData = await gameRes.json()
 
             if (gameData.gameStats) {
@@ -117,20 +133,11 @@ export default function ProfilePage() {
         } finally {
             setIsLoading(false)
         }
-    }, [address, isConnected])
+    }, [accountId, isConnected])
 
     const gamesPlayedCount = transactions.filter(tx => tx.type === "GAME_PAYMENT").length;
 
-    // Add a manual login handler for the connect button
-    const handleManualLogin = async () => {
-        try {
-            await login()
-        } catch (error) {
-            console.error("Manual login failed:", error)
-        }
-    }
-
-    if (isLoading || isAuthLoading) {
+    if (isLoading) {
         return (
             <div className="container mx-auto py-10 px-4">
                 <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -146,25 +153,8 @@ export default function ProfilePage() {
             <div className="container mx-auto py-10 px-4">
                 <div className="flex flex-col items-center justify-center min-h-[60vh]">
                     <h1 className="text-3xl font-bold text-white mb-4">Connect Your Wallet</h1>
-                    <p className="text-gray-400 mb-6">Please connect your wallet to view your profile</p>
-                    <ConnectButton />
-                </div>
-            </div>
-        )
-    }
-
-    if (isConnected && !isAuthenticated) {
-        return (
-            <div className="container mx-auto py-10 px-4">
-                <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                    <h1 className="text-3xl font-bold text-white mb-4">Authentication Required</h1>
-                    <p className="text-gray-400 mb-6">Please sign a message to authenticate your wallet</p>
-                    <button
-                        onClick={handleManualLogin}
-                        className="bg-[#98ee2c] text-black px-4 py-2 rounded font-bold hover:bg-[#7bc922] transition-colors"
-                    >
-                        Sign In
-                    </button>
+                    <p className="text-gray-400 mb-6">Please connect your Hedera wallet to view your profile</p>
+                    <HederaConnectButton />
                 </div>
             </div>
         )
@@ -193,9 +183,9 @@ export default function ProfilePage() {
 
                                 <div className="mt-4 w-full">
                                     <div className="bg-[#151515] p-4 rounded-md mb-4">
-                                        <p className="text-sm text-gray-400 mb-1">Wallet Address</p>
+                                        <p className="text-sm text-gray-400 mb-1">Hedera Account ID</p>
                                         <p className="text-sm font-mono break-all">
-                                            {address || profile?.walletAddress || "Not connected"}
+                                            {accountId || "Not connected"}
                                         </p>
                                     </div>
 
@@ -206,7 +196,7 @@ export default function ProfilePage() {
                                         ) : (
                                             <div className="flex items-center">
                                                 <span className="text-xl font-bold text-[#98ee2c]">
-                                                    {tokenBalance ? parseFloat(tokenBalance.formatted).toFixed(2) : "0.00"}
+                                                    {parseFloat(realmBalance).toFixed(2)}
                                                 </span>
                                                 <span className="ml-2 text-gray-400">REALM</span>
                                             </div>
@@ -500,7 +490,7 @@ export default function ProfilePage() {
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GameScoreCard walletAddress={address || ""} />
+                <GameScoreCard walletAddress={accountId || ""} />
             </div>
         </div>
     )
