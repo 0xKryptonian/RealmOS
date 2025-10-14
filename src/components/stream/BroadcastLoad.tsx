@@ -4,7 +4,8 @@ import React from "react"
 // @ts-ignore
 import { Player, Src } from "@livepeer/react"
 import { getIngest } from "@livepeer/react/external";
-import { streamKey } from "@/lib/contracts";
+
+const streamKey = process.env.NEXT_PUBLIC_LIVEPEER_STREAM_KEY || "";
 
 interface BroadcastLoadProps {
     src: Src[]

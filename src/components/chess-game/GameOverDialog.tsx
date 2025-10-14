@@ -10,16 +10,9 @@ import {
 import { Button } from '@/components/ui';
 import { Trophy, Handshake, Award, Loader2 } from 'lucide-react';
 import { Chessboard } from 'react-chessboard';
-import { chessWinnerABI } from '../../../contract/abi/ChessWinnerABI';
-import { chessWinnerNFT } from '@/lib/contracts';
 import { GameStatus, PieceColor } from './ChessTypes';
 import { GameSettings } from './GameFunctions';
-import {
-    useAccount,
-    useWriteContract,
-    useWaitForTransactionReceipt
-} from "wagmi";
-import { ethers } from 'ethers';
+import { useDAppConnector } from '@/components/client-providers';
 
 // Define interface for component props
 interface GameOverDialogProps {
@@ -35,8 +28,6 @@ interface GameOverDialogProps {
     opponent: string; // Opponent address
     moveCount: number; // Number of moves in the game
 }
-
-const NFT_CONTRACT_ADDRESS = chessWinnerNFT;
 
 const GameOverDialog: React.FC<GameOverDialogProps> = ({
     showGameOverModal,

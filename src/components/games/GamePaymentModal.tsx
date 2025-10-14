@@ -3,13 +3,10 @@
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
-import { parseUnits } from "viem"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
-import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { recordGamePayment } from "@/lib/services/game-service"
-import { contractAddresses } from "@/lib/contracts"
+import { useDAppConnector } from "@/components/client-providers"
 
 interface GamePaymentModalProps {
     isOpen: boolean
@@ -18,36 +15,17 @@ interface GamePaymentModalProps {
     gameName: string
 }
 
-// Token contract address from the prompt
-const TOKEN_CONTRACT_ADDRESS = contractAddresses.tokenMint as `0x${string}`
-// ERC20 transfer function signature
-const ERC20_ABI = [
-    {
-        name: "transfer",
-        type: "function",
-        stateMutability: "nonpayable",
-        inputs: [
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" }
-        ],
-        outputs: [{ name: "", type: "bool" }]
-    }
-]
-
-// Platform wallet that receives the fees
-const PLATFORM_WALLET = "0x043Bb2629766bB4375c8EC3d0CbbfA77bC7e7BC9"
+// Game entry fee in REALM tokens
+const GAME_ENTRY_FEE = 10;
 
 export function GamePaymentModal({ isOpen, onClose, gamePath, gameName }: GamePaymentModalProps) {
     const router = useRouter()
-    const { address, isConnected } = useAccount()
+    const dAppContext = useDAppConnector()
+    const userAccountId = dAppContext?.userAccountId
+    const isConnected = !!userAccountId
     const [isPaying, setIsPaying] = useState(false)
     const [redirecting, setRedirecting] = useState(false)
-
-    const { data: hash, isPending, writeContract, error } = useWriteContract()
-
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash,
-    })
+    const [error, setError] = useState<string | null>(null)
 
     const gameId = gamePath.split('/').pop() || ""
 

@@ -1,132 +1,166 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseEther, formatEther } from "viem";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoIcon, CoinsIcon, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon } from "lucide-react";
-import { contractAddresses, contractABIs, blockExplorer } from "@/lib/contracts";
-import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CoinsIcon, TrendingUpIcon, UsersIcon, ActivityIcon } from "lucide-react";
+import { useDAppConnector } from "@/components/client-providers";
 
-export default function TokenMintPage() {
-    const [amount, setAmount] = useState<number>(1);
+export default function TokenStats() {
+    const [tokenBalance, setTokenBalance] = useState<string>("0");
+    const [totalSupply, setTotalSupply] = useState<string>("0");
+    const [holderCount, setHolderCount] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const { address, isConnected } = useAccount();
-    const { isAuthenticated } = useAuth();
+    const dAppContext = useDAppConnector();
+    const userAccountId = dAppContext?.userAccountId;
 
-    // Read contract data
-    const { data: mintPrice } = useReadContract({
-        address: contractAddresses.tokenMint as `0x${string}`,
-        abi: contractABIs.tokenMint,
-        functionName: "mintPrice",
-    });
-
-    const { data: remainingAllowance } = useReadContract({
-        address: contractAddresses.tokenMint as `0x${string}`,
-        abi: contractABIs.tokenMint,
-        functionName: "getRemainingMintAllowance",
-        args: [address || "0x0000000000000000000000000000000000000000"],
-        query: {
-            enabled: !!address
-        }
-    });
-
-    const { data: tokenSymbol } = useReadContract({
-        address: contractAddresses.tokenMint as `0x${string}`,
-        abi: contractABIs.tokenMint,
-        functionName: "symbol",
-    });
-
-
-    const { data: tokenBalance } = useReadContract({
-        address: contractAddresses.tokenMint as `0x${string}`,
-        abi: contractABIs.tokenMint,
-        functionName: "balanceOf",
-        args: [address || "0x0000000000000000000000000000000000000000"],
-        query: {
-            enabled: !!address
-        }
-    });
-
-    // Format balance for display
-    const formattedBalance = tokenBalance && typeof tokenBalance === 'bigint'
-        ? Number(formatEther(tokenBalance))
-        : 0;
-
-    // Add this right before the return statement
+    // Fetch token stats
     useEffect(() => {
-        console.log("Mint state:", {
-            address,
-            isConnected,
-            isAuthenticated,
-            remainingAllowance: Number(remainingAllowance || 0),
-            mintPrice,
-            amount
-        });
-    }, [address, isConnected, isAuthenticated, remainingAllowance, mintPrice, amount]);
+        const fetchStats = async () => {
+            if (!userAccountId) return;
+            
+            try {
+                setIsLoading(true);
+                
+                // Fetch user balance
+                const balanceResponse = await fetch(`/api/hedera/account/balance?accountId=${userAccountId}`);
+                const balanceData = await balanceResponse.json();
+                
+                if (balanceData.success && balanceData.data.tokens) {
+                    const realmTokenId = process.env.NEXT_PUBLIC_REALM_TOKEN_ID;
+                    if (realmTokenId) {
+                        const balance = balanceData.data.tokens.get(realmTokenId) || "0";
+                        setTokenBalance(balance);
+                    }
+                }
+
+                // Fetch token info
+                const tokenResponse = await fetch(`/api/hedera/token/info?tokenId=${process.env.NEXT_PUBLIC_REALM_TOKEN_ID}`);
+                const tokenData = await tokenResponse.json();
+                
+                if (tokenData.success) {
+                    setTotalSupply(tokenData.data.totalSupply || "0");
+                    setHolderCount(tokenData.data.holderCount || 0);
+                }
+            } catch (error) {
+                console.error('Failed to fetch token stats:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, [userAccountId]);
+
+    const formattedBalance = parseFloat(tokenBalance).toFixed(2);
+    const formattedSupply = parseFloat(totalSupply).toFixed(2);
 
     return (
         <div className="container max-w-4xl py-2">
-            <h1 className="text-4xl font-bold text-center mb-8 text-white bg-clip-text text-transparent">
-                Get your $Game token to play
+            <h1 className="text-4xl font-bold text-center mb-8 text-white">
+                REALM Token Statistics
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center">
                             <CoinsIcon className="mr-2 h-5 w-5" />
-                            Token Balance
+                            Your Balance
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold">{formattedBalance.toLocaleString()}</p>
-                        <p className="text-sm text-slate-400">{tokenSymbol as string ?? "Tokens"}</p>
+                        <div className="text-3xl font-bold">
+                            {isLoading ? "..." : formattedBalance}
+                        </div>
+                        <p className="text-sm text-slate-400 mt-1">REALM</p>
                     </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center">
-                            <RefreshCwIcon className="mr-2 h-5 w-5" />
-                            Daily Allowance
+                            <TrendingUpIcon className="mr-2 h-5 w-5" />
+                            Total Supply
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold">{Number(remainingAllowance ?? 0).toString()}</p>
-                        <p className="text-sm text-slate-400">Tokens available today</p>
+                        <div className="text-3xl font-bold">
+                            {isLoading ? "..." : formattedSupply}
+                        </div>
+                        <p className="text-sm text-slate-400 mt-1">REALM</p>
                     </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center">
-                            <InfoIcon className="mr-2 h-5 w-5" />
-                            Mint Price
+                            <UsersIcon className="mr-2 h-5 w-5" />
+                            Holders
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold">
-                            {mintPrice ? formatEther(mintPrice as bigint) : "0"} ETH
-                        </p>
-                        <p className="text-sm text-slate-400">Per token</p>
+                        <div className="text-3xl font-bold">
+                            {isLoading ? "..." : holderCount}
+                        </div>
+                        <p className="text-sm text-slate-400 mt-1">accounts</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 text-white">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-lg flex items-center">
+                            <ActivityIcon className="mr-2 h-5 w-5" />
+                            Network
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold">Testnet</div>
+                        <p className="text-sm text-slate-400 mt-1">Hedera</p>
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="mt-8 text-center text-sm text-muted-foreground">
-                <p>
-                    Contract Address:{" "}
-                    <a
-                        href={blockExplorer.tokenMint}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:text-blue-600"
-                    >
-                        {contractAddresses.tokenMint}
-                    </a>
-                </p>
+            <Card className="border-slate-200 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Token Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex justify-between py-2 border-b">
+                            <span className="text-slate-600 font-medium">Token Name:</span>
+                            <span className="font-semibold">REALM</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b">
+                            <span className="text-slate-600 font-medium">Token Symbol:</span>
+                            <span className="font-semibold">REALM</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b">
+                            <span className="text-slate-600 font-medium">Token ID:</span>
+                            <span className="font-mono text-sm">{process.env.NEXT_PUBLIC_REALM_TOKEN_ID || "Not set"}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b">
+                            <span className="text-slate-600 font-medium">Decimals:</span>
+                            <span className="font-semibold">8</span>
+                        </div>
+                        <div className="flex justify-between py-2">
+                            <span className="text-slate-600 font-medium">Network:</span>
+                            <span className="font-semibold">Hedera Testnet</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="mt-8 text-center">
+                <a
+                    href={`https://hashscan.io/testnet/token/${process.env.NEXT_PUBLIC_REALM_TOKEN_ID}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                >
+                    View on HashScan Explorer
+                </a>
             </div>
         </div>
     );
-} 
+}
