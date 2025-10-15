@@ -15,26 +15,15 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
-    DialogClose,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-    Separator,
-    Skeleton,
-    Switch,
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-    Label,
     Alert,
     AlertTitle,
     AlertDescription
 } from '@/components/ui';
-import { Clock, Undo, RotateCcw, Settings, Trophy, Info, Play, Pause, Handshake, Shuffle, ArrowLeft, Loader2, Search, Copy, X, Lightbulb } from 'lucide-react';
+import { RotateCcw, Trophy, Handshake, Shuffle, ArrowLeft, Loader2, Copy, X, Lightbulb, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toast';
 // import types

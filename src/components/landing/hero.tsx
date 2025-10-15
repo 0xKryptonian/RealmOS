@@ -6,7 +6,7 @@ export function Hero() {
           An example Next.js app for the Hedera Agent Kit
         </h1>
         <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-          I'm an AI assistant that can help you with your Hedera-related tasks.
+          I&apos;m an AI assistant that can help you with your Hedera-related tasks.
         </p>
       </div>
     </section>

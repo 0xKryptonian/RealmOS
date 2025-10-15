@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         const { gameSlug, duration, completed } = data
 
         // Find the game
-        let game = await db.game.findUnique({
+        const game = await db.game.findUnique({
             where: { slug: gameSlug },
         })
 

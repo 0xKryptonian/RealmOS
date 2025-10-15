@@ -428,7 +428,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             // Check if the current word is complete after using hint
             const currentWord = state.words.find(w => w.id === state.currentWordId);
-            let newCompletedWords = [...state.completedWords];
+            const newCompletedWords = [...state.completedWords];
 
             if (currentWord) {
                 const isWordComplete = checkIfWordComplete(newGrid, currentWord);
