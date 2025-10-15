@@ -17,7 +17,7 @@ model User {
   id            String         @id @default(cuid())
   name          String?
   email         String?        @unique
-  walletAddress String         @unique
+  walletAddress String         @unique // Legacy field for compatibility
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   transactions  Transaction[]
@@ -28,12 +28,23 @@ model User {
   username     String?   @unique
   avatar       String?   // IPFS hash or URL
   bio          String?
-  NFTid        String?
-
+  NFTid        String?   // Profile NFT token ID
+  
+  // Hedera-specific fields
+  hederaAccountId String? @unique // 0.0.xxxxx format
+  hederaPublicKey String?
+  profileNFTSerial String? // Serial number of profile NFT
+  realmBalance    Float   @default(0) // Cached REALM token balance
+  
   // Game-related relations
   userGames     UserGame[]
   createdEvents GameEvent[]
   eventParticipations EventParticipant[]
+  ownedNFTs     NFT[]
+  marketplaceListings MarketplaceListing[]
+  marketplacePurchases MarketplacePurchase[]
+  achievements  Achievement[]
+  agentInteractions AgentInteraction[]
 }
 
 model VerificationToken {
@@ -163,8 +174,198 @@ model GameScore {
   score     Int
   metadata  Json?    // Additional game-specific data
   achievedAt DateTime @default(now())
+  txHash    String?  // Hedera transaction hash for HCS submission
   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  @@index([score])
+  @@index([achievedAt])
+}
+
+// Hedera Token Service (HTS) Token tracking
+model Token {
+  id            String   @id @default(cuid())
+  tokenId       String   @unique // Hedera Token ID (0.0.xxxxx)
+  name          String
+  symbol        String
+  type          String   // FUNGIBLE, NON_FUNGIBLE
+  decimals      Int      @default(0)
+  totalSupply   String?  // For fungible tokens
+  treasuryId    String?  // Treasury account ID
+  adminKey      String?  // Admin key (encrypted)
+  supplyKey     String?  // Supply key (encrypted)
+  metadata      Json?    // Additional token metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([tokenId])
+  @@index([type])
+}
+
+// NFT tracking (HTS NFTs)
+model NFT {
+  id            String   @id @default(cuid())
+  tokenId       String   // Token ID (0.0.xxxxx)
+  serialNumber  String   // Serial number
+  metadata      Json     // IPFS metadata URL and content
+  owner         String   // Current owner Hedera Account ID
+  userId        String?  // Associated user in our system
+  category      String   // PROFILE, GAME_ASSET, ACHIEVEMENT, etc.
+  rarity        String?  // COMMON, RARE, EPIC, LEGENDARY
+  attributes    Json?    // NFT attributes
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User?    @relation(fields: [userId], references: [id])
+  listings      MarketplaceListing[]
+  
+  @@unique([tokenId, serialNumber])
+  @@index([owner])
+  @@index([category])
+  @@index([rarity])
+}
+
+// HCS (Hedera Consensus Service) Message tracking
+model HCSMessage {
+  id                  String   @id @default(cuid())
+  topicId             String   // HCS Topic ID (0.0.xxxxx)
+  sequenceNumber      String
+  message             Json     // Message content
+  consensusTimestamp  String   // Hedera consensus timestamp
+  type                String   // LEADERBOARD, GAME_EVENT, TOURNAMENT, etc.
+  createdAt           DateTime @default(now())
+  
+  @@index([topicId])
+  @@index([type])
+  @@index([consensusTimestamp])
+}
+
+// Marketplace Listing
+model MarketplaceListing {
+  id            String   @id @default(cuid())
+  nftId         String
+  nft           NFT      @relation(fields: [nftId], references: [id])
+  sellerId      String
+  seller        User     @relation(fields: [sellerId], references: [id])
+  price         String   // Price in HBAR (stored as string for precision)
+  currency      String   @default("HBAR") // HBAR, REALM, etc.
+  status        String   // ACTIVE, SOLD, CANCELLED
+  listingType   String   // FIXED_PRICE, AUCTION
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  purchases     MarketplacePurchase[]
+  
+  @@index([status])
+  @@index([sellerId])
+  @@index([createdAt])
+}
+
+// Marketplace Purchase
+model MarketplacePurchase {
+  id            String   @id @default(cuid())
+  listingId     String
+  listing       MarketplaceListing @relation(fields: [listingId], references: [id])
+  buyerId       String
+  buyer         User     @relation(fields: [buyerId], references: [id])
+  price         String   // Final purchase price
+  txHash        String   // Hedera transaction hash
+  status        String   // PENDING, COMPLETED, FAILED
+  createdAt     DateTime @default(now())
+  
+  @@index([buyerId])
+  @@index([status])
+}
+
+// Achievement system
+model Achievement {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  type          String   // GAME_COMPLETION, HIGH_SCORE, TOURNAMENT_WIN, etc.
+  gameId        String?
+  title         String
+  description   String
+  nftTokenId    String?  // Associated NFT token ID
+  nftSerial     String?  // Associated NFT serial number
+  metadata      Json?
+  earnedAt      DateTime @default(now())
+  
+  @@index([userId])
+  @@index([type])
+}
+
+// AI Agent system
+model AIAgent {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // GAME_ASSISTANT, TOURNAMENT_MANAGER, REWARD_DISTRIBUTOR, NFT_GENERATOR
+  status        String   // ACTIVE, INACTIVE, MAINTENANCE
+  config        Json     // Agent configuration
+  stats         Json?    // Usage statistics
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  interactions  AgentInteraction[]
+  
+  @@index([type])
+  @@index([status])
+}
+
+// AI Agent Interactions
+model AgentInteraction {
+  id            String   @id @default(cuid())
+  agentId       String
+  agent         AIAgent  @relation(fields: [agentId], references: [id])
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  type          String   // CHAT, TASK_EXECUTION, AUTOMATION
+  input         Json     // User input or trigger
+  output        Json?    // Agent response
+  status        String   // PENDING, COMPLETED, FAILED
+  cost          Float?   // API cost in USD
+  createdAt     DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Tournament Prize Pool
+model TournamentPrize {
+  id            String   @id @default(cuid())
+  eventId       String
+  position      Int      // 1st, 2nd, 3rd, etc.
+  prizeType     String   // HBAR, REALM, NFT
+  amount        String?  // For token prizes
+  nftTokenId    String?  // For NFT prizes
+  nftSerial     String?
+  winnerId      String?  // Winner user ID
+  distributed   Boolean  @default(false)
+  txHash        String?  // Distribution transaction hash
+  createdAt     DateTime @default(now())
+  
+  @@index([eventId])
+  @@index([winnerId])
+}
+
+// Streaming Session (Livepeer integration)
+model StreamingSession {
+  id            String   @id @default(cuid())
+  userId        String
+  streamId      String   // Livepeer stream ID
+  title         String
+  description   String?
+  gameId        String?
+  status        String   // LIVE, ENDED
+  viewerCount   Int      @default(0)
+  rewardPool    String?  // REALM tokens for viewers
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  
+  @@index([userId])
+  @@index([status])
 }
 
