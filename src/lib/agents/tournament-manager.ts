@@ -103,9 +103,14 @@ Be precise, fair, and transparent in all tournament operations.`,
           const recipientId = AccountId.fromString(result.playerId);
           
           // Transfer prize tokens
+          const operatorAccountId = process.env.HEDERA_ACCOUNT_ID;
+          if (!operatorAccountId) {
+            throw new Error('HEDERA_ACCOUNT_ID not configured');
+          }
+
           const txId = await HederaTokenService.transferToken({
             tokenId,
-            fromAccountId: this.agentKit.getAccountId(),
+            fromAccountId: AccountId.fromString(operatorAccountId),
             toAccountId: recipientId,
             amount: result.prize,
           });

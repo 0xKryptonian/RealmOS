@@ -7,7 +7,7 @@ import { BsArrowRight } from "react-icons/bs"
 import { BiHeart } from "react-icons/bi"
 import { FaGamepad } from "react-icons/fa"
 import { FaChess, FaRegLightbulb } from "react-icons/fa"
-// import { GamePaymentModal } from "@/components/games/GamePaymentModal"
+import { GamePaymentModal } from "@/components/games/GamePaymentModal"
 
 // Game data structure
 interface Game {
@@ -285,15 +285,15 @@ const GamesPage = () => {
                 </div>
             </div>
 
-            {/* Payment Modal - Temporarily disabled during migration */}
-            {/* {selectedGame && (
+            {/* Payment Modal */}
+            {selectedGame && (
                 <GamePaymentModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     gamePath={selectedGame.path}
                     gameName={selectedGame.name}
                 />
-            )} */}
+            )}
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { getSession } from "@/lib/auth-utils"
+// import { getSession } from "@/lib/auth-utils"
 
 export async function GET(req: NextRequest) {
     try {

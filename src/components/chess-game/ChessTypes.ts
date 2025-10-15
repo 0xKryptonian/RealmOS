@@ -109,7 +109,7 @@ export type UndoMoveFunction = () => void;
 export type SwitchSidesFunction = () => void;
 export type HandlePromotionFunction = (piece: PromotionPiece) => void;
 export type FormatMoveFunction = (move: Move) => string;
-export type RenderPieceIconFunction = (piece: ChessPiece, color: PieceColor) => JSX.Element;
+export type RenderPieceIconFunction = (piece: ChessPiece, color: PieceColor) => ReactNode;
 export type MakeAIMoveFunction = () => Promise<void>;
 export type GetHintFunction = () => void;
 

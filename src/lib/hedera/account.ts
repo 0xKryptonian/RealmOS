@@ -6,6 +6,7 @@ import {
   AccountId,
   PrivateKey,
   Hbar,
+  PublicKey,
 } from '@hashgraph/sdk';
 import { HederaClient } from './client';
 
@@ -70,9 +71,9 @@ export class HederaAccountService {
 
     const tokenBalances = new Map<string, number>();
     if (balance.tokens) {
-      balance.tokens.forEach((value, key) => {
-        tokenBalances.set(key.toString(), value.toNumber());
-      });
+      for (const [tokenId, tokenBalance] of balance.tokens) {
+        tokenBalances.set(tokenId.toString(), tokenBalance.toNumber());
+      }
     }
 
     return {

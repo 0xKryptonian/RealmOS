@@ -5,14 +5,14 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogClose
-} from '@/components/ui';
-import { Button } from '@/components/ui';
-import { Trophy, Handshake, Award, Loader2 } from 'lucide-react';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Trophy, Handshake, Award, Loader2, ExternalLink } from 'lucide-react';
 import { Chessboard } from 'react-chessboard';
 import { GameStatus, PieceColor } from './ChessTypes';
 import { GameSettings } from './GameFunctions';
 import { useDAppConnector } from '@/components/client-providers';
+import { TransferTransaction, Hbar, AccountId } from '@hashgraph/sdk';
 
 // Define interface for component props
 interface GameOverDialogProps {
@@ -24,10 +24,14 @@ interface GameOverDialogProps {
     fen: string;
     settings: GameSettings;
     resetGame: () => void;
-    moves: string; // PGN or move history as string
-    opponent: string; // Opponent address
-    moveCount: number; // Number of moves in the game
+    moves: string;
+    opponent: string;
+    moveCount: number;
 }
+
+// Winner reward in HBAR
+const WINNER_REWARD_HBAR = 0.5;
+const PLATFORM_ACCOUNT_ID = process.env.NEXT_PUBLIC_PLATFORM_ACCOUNT_ID || "0.0.1234";
 
 const GameOverDialog: React.FC<GameOverDialogProps> = ({
     showGameOverModal,
@@ -36,236 +40,185 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
     playerColor,
     result,
     fen,
-    settings,
     resetGame,
-    moves,
-    opponent,
     moveCount
 }) => {
-    const [mintingStatus, setMintingStatus] = useState('idle'); // 'idle', 'minting', 'success', 'error'
-    const [txHash, setTxHash] = useState('');
+    const [claimingReward, setClaimingReward] = useState(false);
+    const [rewardClaimed, setRewardClaimed] = useState(false);
+    const [txId, setTxId] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    // Get account information using wagmi hook
-    const { address } = useAccount();
+    const dAppContext = useDAppConnector();
+    const dAppConnector = dAppContext?.dAppConnector;
+    const userAccountId = dAppContext?.userAccountId;
 
     const isWinner = gameStatus.winner && gameStatus.winner === playerColor;
+    const isDraw = !gameStatus.winner && gameStatus.reason !== null;
 
-    // Use wagmi's useWriteContract hook to mint the NFT
-    const { writeContract, isPending: isMinting, error: writeError } = useWriteContract();
-
-    // Use wagmi's useWaitForTransactionReceipt hook to wait for transaction confirmation
-    const {
-        data: receipt,
-        isSuccess: isConfirmed,
-        isError: isReceiptError
-    } = useWaitForTransactionReceipt({
-        hash: txHash as `0x${string}`,
-    });
-
-    // Function to mint the NFT
-    const mintWinnerNFT = async () => {
-        if (!address) {
-            alert("Please connect your wallet to mint NFTs!");
+    // Claim winner reward
+    const claimReward = async () => {
+        if (!userAccountId || !dAppConnector) {
+            setError("Please connect your wallet first");
             return;
         }
 
+        setClaimingReward(true);
+        setError(null);
+
         try {
-            setMintingStatus('minting');
+            // Create transfer transaction for reward
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(AccountId.fromString(PLATFORM_ACCOUNT_ID), Hbar.fromString(`-${WINNER_REWARD_HBAR}`))
+                .addHbarTransfer(AccountId.fromString(userAccountId), Hbar.fromString(`${WINNER_REWARD_HBAR}`))
+                .setTransactionMemo(`Chess Win Reward - ${moveCount} moves`);
 
-            console.log("Moves:", moves);
-            console.log("Moves hex:", `0x${Buffer.from(moves).toString('hex')}`);
+            // Freeze and convert to bytes
+            const frozenTx = await transaction.freezeWithSigner(dAppConnector.signers[0]);
+            const txBytes = Buffer.from(frozenTx.toBytes()).toString('base64');
 
-            const encodedMoves = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(moves));
-            console.log("Encoded moves:", encodedMoves);
-
-            // Ensure encodedMoves is exactly 20 bytes (40 hex characters)
-            let paddedEncodedMoves = encodedMoves;
-
-            // Check the length of the encoded moves
-            if (paddedEncodedMoves.length < 42) { // 42 because '0x' prefix is included
-                // Pad with zeros to the right if less than 20 bytes
-                paddedEncodedMoves = paddedEncodedMoves.padEnd(42, '0');
-            } else if (paddedEncodedMoves.length > 42) {
-                // Truncate to 20 bytes if more than 20 bytes
-                paddedEncodedMoves = paddedEncodedMoves.slice(0, 42);
-            }
-
-            console.log("Padded/Truncated encoded moves:", paddedEncodedMoves);
-
-            // Determine win type from result text
-            let winType = "checkmate";
-            if (result.includes("resign")) {
-                winType = "resignation";
-            } else if (result.includes("time")) {
-                winType = "timeout";
-            }
-
-            console.log("Minting NFT with parameters:", {
-                winner: address,
-                fen,
-                moves: moves.substring(0, 30) + "...", // Log truncated moves for readability
-                opponent,
-                isWhite: playerColor === 'w',
-                moveCount,
-                winType
+            // Sign and execute
+            const result = await dAppConnector.signAndExecuteTransaction({
+                signerAccountId: userAccountId,
+                transactionList: txBytes,
             });
 
-            const someSecretOrNonce = ethers.utils.hexlify(ethers.utils.randomBytes(32)); // Generate a random 32-byte nonce
-
-
-            const gameSignature = ethers.utils.keccak256(
-                ethers.utils.solidityPack(
-                    ['address', 'string', 'bytes32'],
-                    [address, fen, someSecretOrNonce] // This is simplified - implement proper signature mechanism
-                )
-            );
-
-            // Call mintWinnerNFT function using wagmi's writeContract
-            writeContract({
-                address: NFT_CONTRACT_ADDRESS,
-                abi: chessWinnerABI,
-                functionName: 'mintWinnerNFT',
-                args: [
-                    fen,                // finalFen (string)
-                    paddedEncodedMoves, // moves (string) - ensure this is a string, not bytes
-                    opponent,           // loser address
-                    playerColor === 'w', // wasWhite (boolean)
-                    moveCount,          // moveCount (uint256)
-                    winType,            // winType (string)
-                    gameSignature       // gameSignature (bytes32)
-                ],
-            }, {
-                onSuccess(data) {
-                    console.log("Transaction sent:", data);
-                    setTxHash(data);
-                },
-                onError(error) {
-                    console.error("Error minting NFT:", error);
-                    setMintingStatus('error');
-                }
-            });
-        } catch (error) {
-            console.error("Error minting NFT:", error);
-            setMintingStatus('error');
+            const transactionId = 'transactionId' in result ? result.transactionId : null;
+            
+            if (transactionId) {
+                setTxId(String(transactionId));
+                setRewardClaimed(true);
+            }
+        } catch (err) {
+            console.error("Reward claim failed:", err);
+            setError(err instanceof Error ? err.message : "Failed to claim reward");
+        } finally {
+            setClaimingReward(false);
         }
     };
 
-    // Update status based on transaction receipt
-    React.useEffect(() => {
-        if (isConfirmed && receipt) {
-            console.log("Transaction confirmed:", receipt);
-            setMintingStatus('success');
-        } else if (isReceiptError) {
-            console.error("Transaction failed");
-            setMintingStatus('error');
-        }
-    }, [isConfirmed, isReceiptError, receipt]);
+    const handleClose = () => {
+        setShowGameOverModal(false);
+        setRewardClaimed(false);
+        setTxId(null);
+        setError(null);
+    };
+
+    const handlePlayAgain = () => {
+        handleClose();
+        resetGame();
+    };
 
     return (
-        <Dialog
-            open={showGameOverModal}
-            onOpenChange={(open) => {
-                console.log("Dialog open state changing to:", open);
-                setShowGameOverModal(open);
-            }}
-        >
-            <DialogContent className="sm:max-w-md">
+        <Dialog open={showGameOverModal} onOpenChange={handleClose}>
+            <DialogContent className="sm:max-w-2xl bg-[#202020] border-gray-700 text-white">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center justify-center text-2xl gap-2">
-                        {gameStatus.winner ? (
-                            <>
-                                <Trophy className="h-6 w-6 text-yellow-500" />
-                                {gameStatus.winner === playerColor ? "Victory!" : "Defeat!"}
-                            </>
-                        ) : (
-                            <>
-                                <Handshake className="h-6 w-6" />
-                                Draw!
-                            </>
-                        )}
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                        {isWinner && <Trophy className="text-yellow-500" />}
+                        {isDraw && <Handshake className="text-blue-500" />}
+                        {!isWinner && !isDraw && <Award className="text-gray-500" />}
+                        {isWinner ? "Victory!" : isDraw ? "Draw!" : "Game Over"}
                     </DialogTitle>
-                    <DialogDescription className="text-center text-base">
+                    <DialogDescription className="text-gray-400">
                         {result}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex justify-center my-4">
-                    <div className="w-64 h-64">
+                <div className="space-y-4">
+                    {/* Final board position */}
+                    <div className="w-full max-w-md mx-auto">
                         <Chessboard
                             position={fen}
-                            boardOrientation={settings.orientation}
+                            boardOrientation={playerColor === 'w' ? 'white' : 'black'}
                             arePiecesDraggable={false}
                         />
                     </div>
-                </div>
 
-                {mintingStatus === 'success' && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-lg p-3 mb-3 text-center">
-                        <p className="text-green-700 dark:text-green-400 flex items-center justify-center gap-2">
-                            <Award className="h-5 w-5" />
-                            NFT minted successfully!
-                        </p>
-                        {txHash && (
+                    {/* Game stats */}
+                    <div className="bg-[#151515] p-4 rounded-md">
+                        <h3 className="font-semibold mb-2">Game Statistics</h3>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                                <span className="text-gray-400">Total Moves:</span>
+                                <span className="ml-2 font-semibold">{moveCount}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-400">Your Color:</span>
+                                <span className="ml-2 font-semibold capitalize">{playerColor}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Winner reward section */}
+                    {isWinner && !rewardClaimed && (
+                        <div className="bg-green-900/20 border border-green-800 p-4 rounded-md">
+                            <div className="flex items-center justify-between mb-2">
+                                <div>
+                                    <h3 className="font-semibold text-green-300">🎉 Congratulations!</h3>
+                                    <p className="text-sm text-gray-400">Claim your winner reward</p>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold text-[#98ee2c]">{WINNER_REWARD_HBAR} HBAR</div>
+                                    <div className="text-xs text-gray-400">~$0.025</div>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={claimReward}
+                                disabled={claimingReward}
+                                className="w-full bg-[#98ee2c] text-black hover:bg-[#7bc922] font-bold"
+                            >
+                                {claimingReward ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Claiming Reward...
+                                    </>
+                                ) : (
+                                    "Claim Reward"
+                                )}
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Reward claimed success */}
+                    {rewardClaimed && txId && (
+                        <div className="bg-green-900/20 border border-green-800 p-4 rounded-md">
+                            <h3 className="font-semibold text-green-300 mb-2">✓ Reward Claimed!</h3>
+                            <p className="text-sm text-gray-400 mb-2">
+                                {WINNER_REWARD_HBAR} HBAR has been sent to your wallet
+                            </p>
                             <a
-                                href={`https://scan.test2.btcs.network//tx/${txHash}`}
+                                href={`https://hashscan.io/testnet/transaction/${txId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-blue-600 dark:text-blue-400 underline mt-1 inline-block"
+                                className="text-xs text-[#98ee2c] hover:underline flex items-center gap-1"
                             >
-                                View on Core Testnet Explorer
+                                View on HashScan <ExternalLink className="h-3 w-3" />
                             </a>
-                        )}
-                    </div>
-                )}
-
-                {mintingStatus === 'error' && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg p-3 mb-3">
-                        <p className="text-red-700 dark:text-red-400 text-center">
-                            Failed to mint NFT. Please try again.
-                        </p>
-                    </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row justify-between gap-3">
-                    <div className="flex gap-2">
-                        <DialogClose asChild>
-                            <Button variant="outline" onClick={() => {
-                                console.log("Review Game button clicked");
-                                setShowGameOverModal(false);
-                            }}>
-                                Review Game
-                            </Button>
-                        </DialogClose>
-
-                        <Button onClick={() => {
-                            console.log("New Game button clicked");
-                            resetGame();
-                            setShowGameOverModal(false);
-                        }}>
-                            New Game
-                        </Button>
-                    </div>
-
-                    {/* Only show mint button if player won and hasn't already minted */}
-                    {isWinner && mintingStatus !== 'success' && (
-                        <Button
-                            onClick={mintWinnerNFT}
-                            disabled={isMinting}
-                            className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white"
-                        >
-                            {isMinting ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Minting...
-                                </>
-                            ) : (
-                                <>
-                                    <Trophy className="mr-2 h-4 w-4" />
-                                    Mint Winner NFT
-                                </>
-                            )}
-                        </Button>
+                        </div>
                     )}
+
+                    {/* Error message */}
+                    {error && (
+                        <div className="bg-red-900/20 border border-red-800 p-3 rounded-md text-red-300 text-sm">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={handlePlayAgain}
+                            className="flex-1 bg-[#98ee2c] text-black hover:bg-[#7bc922] font-bold"
+                        >
+                            Play Again
+                        </Button>
+                        <Button
+                            onClick={handleClose}
+                            variant="outline"
+                            className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+                        >
+                            Close
+                        </Button>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

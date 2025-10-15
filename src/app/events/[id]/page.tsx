@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import { PlayerWithControls } from "@/components/stream/StreamPlayer";
 import { Src } from "@livepeer/react";
 import { notFound } from "next/navigation";
@@ -51,9 +51,10 @@ const events = [
     }
 ];
 
-export default function EventPage({ params }: { params: { id: string } }) {
+export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const { address } = useAccount();
-    const event = events.find(e => e.id === params.id);
+    const event = events.find(e => e.id === id);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -63,11 +64,11 @@ export default function EventPage({ params }: { params: { id: string } }) {
 
     // Load messages from localStorage on component mount
     useEffect(() => {
-        const storedMessages = localStorage.getItem(`event-${params.id}-messages`);
+        const storedMessages = localStorage.getItem(`event-${id}-messages`);
         if (storedMessages) {
             setMessages(JSON.parse(storedMessages));
         }
-    }, [params.id]);
+    }, [id]);
 
     // Scroll to bottom of chat when messages change
     useEffect(() => {
@@ -104,7 +105,7 @@ export default function EventPage({ params }: { params: { id: string } }) {
         setMessages(updatedMessages);
 
         // Save to localStorage
-        localStorage.setItem(`event-${params.id}-messages`, JSON.stringify(updatedMessages));
+        localStorage.setItem(`event-${id}-messages`, JSON.stringify(updatedMessages));
 
         // Clear input
         setMessage("");

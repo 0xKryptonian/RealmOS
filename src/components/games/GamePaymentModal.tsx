@@ -4,9 +4,10 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { Loader2, Wallet } from "lucide-react"
 import { recordGamePayment } from "@/lib/services/game-service"
 import { useDAppConnector } from "@/components/client-providers"
+import { TransferTransaction, Hbar, AccountId } from "@hashgraph/sdk"
 
 interface GamePaymentModalProps {
     isOpen: boolean
@@ -15,59 +16,76 @@ interface GamePaymentModalProps {
     gameName: string
 }
 
-// Game entry fee in REALM tokens
-const GAME_ENTRY_FEE = 10;
+// Game entry fee in HBAR (0.1 HBAR = ~$0.005)
+const GAME_ENTRY_FEE_HBAR = 0.1;
+const PLATFORM_ACCOUNT_ID = process.env.NEXT_PUBLIC_PLATFORM_ACCOUNT_ID || "0.0.1234";
 
 export function GamePaymentModal({ isOpen, onClose, gamePath, gameName }: GamePaymentModalProps) {
     const router = useRouter()
     const dAppContext = useDAppConnector()
+    const dAppConnector = dAppContext?.dAppConnector
     const userAccountId = dAppContext?.userAccountId
     const isConnected = !!userAccountId
     const [isPaying, setIsPaying] = useState(false)
     const [redirecting, setRedirecting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [txId, setTxId] = useState<string | null>(null)
 
     const gameId = gamePath.split('/').pop() || ""
 
-    // Handle payment
+    // Handle payment with HBAR
     const handlePayment = async () => {
-        if (!address) return
+        if (!userAccountId || !dAppConnector) {
+            setError("Please connect your wallet first")
+            return
+        }
 
         setIsPaying(true)
+        setError(null)
 
         try {
-            await writeContract({
-                address: TOKEN_CONTRACT_ADDRESS,
-                abi: ERC20_ABI,
-                functionName: 'transfer',
-                args: [PLATFORM_WALLET, parseUnits('1', 18)], // Assuming 18 decimals for the token
+            // Create transfer transaction
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(AccountId.fromString(userAccountId), Hbar.fromString(`-${GAME_ENTRY_FEE_HBAR}`))
+                .addHbarTransfer(AccountId.fromString(PLATFORM_ACCOUNT_ID), Hbar.fromString(`${GAME_ENTRY_FEE_HBAR}`))
+                .setTransactionMemo(`Game Entry: ${gameName}`)
+
+            // Freeze and convert to bytes
+            const frozenTx = await transaction.freezeWithSigner(dAppConnector.signers[0])
+            const txBytes = Buffer.from(frozenTx.toBytes()).toString('base64')
+
+            // Sign and execute
+            const result = await dAppConnector.signAndExecuteTransaction({
+                signerAccountId: userAccountId,
+                transactionList: txBytes,
             })
+
+            const transactionId = 'transactionId' in result ? result.transactionId : null
+            
+            if (transactionId) {
+                setTxId(String(transactionId))
+                
+                // Record payment in database
+                await recordGamePayment({
+                    gameId: gameId,
+                    txHash: String(transactionId),
+                    amount: GAME_ENTRY_FEE_HBAR,
+                    address: userAccountId,
+                })
+
+                // Redirect to game
+                setRedirecting(true)
+                setTimeout(() => {
+                    router.push(gamePath)
+                    onClose()
+                }, 1500)
+            }
         } catch (err) {
             console.error("Payment failed:", err)
+            setError(err instanceof Error ? err.message : "Payment failed. Please try again.")
             setIsPaying(false)
         }
     }
-
-    // Redirect to game page after successful payment
-    useEffect(() => {
-        if (isConfirmed && !redirecting) {
-            // Record the transaction
-            if (address) {
-                recordGamePayment({
-                    gameId: gameId,
-                    txHash: hash || "",
-                    amount: 1,
-                    address: address,
-                }).catch(err => {
-                    console.error("Failed to record payment:", err)
-                })
-            }
-
-            setRedirecting(true)
-            router.push(gamePath)
-            onClose()
-        }
-    }, [isConfirmed, redirecting, router, gamePath, onClose, hash, gameId, address])
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -75,33 +93,58 @@ export function GamePaymentModal({ isOpen, onClose, gamePath, gameName }: GamePa
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-white">Play {gameName}</DialogTitle>
                     <DialogDescription className="text-gray-400">
-                        To play this game, you need to pay 1 REALM token for each play session.
+                        Pay {GAME_ENTRY_FEE_HBAR} HBAR to start playing. Low fees, instant confirmation!
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col space-y-4 py-4">
                     <div className="bg-[#151515] p-4 rounded-md">
                         <p className="text-sm text-gray-400 mb-2">Payment details:</p>
-                        <div className="flex justify-between">
-                            <span>Game play fee</span>
-                            <span className="font-semibold">1 REALM Token</span>
+                        <div className="flex justify-between mb-2">
+                            <span>Game entry fee</span>
+                            <span className="font-semibold text-[#98ee2c]">{GAME_ENTRY_FEE_HBAR} HBAR</span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2 italic">
-                            Note: Each play session requires a separate payment
+                        <div className="flex justify-between">
+                            <span className="text-xs text-gray-500">USD equivalent</span>
+                            <span className="text-xs text-gray-400">~$0.005</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3 italic">
+                            ⚡ Instant confirmation on Hedera network
                         </p>
                     </div>
 
                     {error && (
                         <div className="bg-red-900/20 border border-red-800 p-3 rounded-md text-red-300 text-sm">
-                            {error.message || "Transaction failed. Please try again."}
+                            {error}
+                        </div>
+                    )}
+
+                    {txId && (
+                        <div className="bg-green-900/20 border border-green-800 p-3 rounded-md text-green-300 text-sm">
+                            ✓ Payment successful! Redirecting to game...
+                            <a 
+                                href={`https://hashscan.io/testnet/transaction/${txId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block text-xs underline mt-1"
+                            >
+                                View on HashScan
+                            </a>
                         </div>
                     )}
                 </div>
 
                 <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-4">
                     {!isConnected ? (
-                        <div className="w-full flex justify-center">
-                            <ConnectButton />
+                        <div className="w-full flex flex-col items-center gap-2">
+                            <p className="text-sm text-gray-400">Connect your Hedera wallet to continue</p>
+                            <Button
+                                onClick={() => dAppConnector?.openModal()}
+                                className="bg-[#98ee2c] text-black hover:bg-[#7bc922] font-bold"
+                            >
+                                <Wallet className="mr-2 h-4 w-4" />
+                                Connect Wallet
+                            </Button>
                         </div>
                     ) : (
                         <>
@@ -109,22 +152,29 @@ export function GamePaymentModal({ isOpen, onClose, gamePath, gameName }: GamePa
                                 variant="outline"
                                 onClick={onClose}
                                 className="border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
-                                disabled={isPending || isConfirming}
+                                disabled={isPaying || redirecting}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={handlePayment}
                                 className="bg-[#98ee2c] text-black hover:bg-[#7bc922] font-bold"
-                                disabled={isPending || isConfirming}
+                                disabled={isPaying || redirecting}
                             >
-                                {isPending || isConfirming ? (
+                                {isPaying ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {isPending ? "Confirm in Wallet" : "Processing..."}
+                                        Processing Payment...
+                                    </>
+                                ) : redirecting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Redirecting...
                                     </>
                                 ) : (
-                                    "Pay & Play Now"
+                                    <>
+                                        Pay {GAME_ENTRY_FEE_HBAR} HBAR & Play
+                                    </>
                                 )}
                             </Button>
                         </>

@@ -101,7 +101,7 @@ const TetrisGame = () => {
     const gameStartTime = useRef(Date.now());
 
     // Add a ref to solve the circular dependency
-    const handleGameOverRef = useRef<() => void>();
+    const handleGameOverRef = useRef<(() => void) | null>(null);
 
     // Create empty board
     function createEmptyBoard() {

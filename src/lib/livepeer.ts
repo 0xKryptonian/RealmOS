@@ -8,7 +8,7 @@
 // export default LivepeerClient;
 
 import { Livepeer } from "livepeer";
-import { streamKey } from "./contracts";
+import { streamKey } from "./constants";
 
 const livepeer = new Livepeer({
     apiKey: streamKey,

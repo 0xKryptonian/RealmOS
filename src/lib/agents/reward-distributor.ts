@@ -95,9 +95,14 @@ Be fair, consistent, and prevent gaming the system.`,
 
     const recipientId = AccountId.fromString(accountId);
 
+    const operatorAccountId = process.env.HEDERA_ACCOUNT_ID;
+    if (!operatorAccountId) {
+      throw new Error('HEDERA_ACCOUNT_ID not configured');
+    }
+
     const txId = await HederaTokenService.transferToken({
       tokenId: this.realmTokenId,
-      fromAccountId: this.agentKit.getAccountId(),
+      fromAccountId: AccountId.fromString(operatorAccountId),
       toAccountId: recipientId,
       amount,
     });
