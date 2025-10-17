@@ -1,13 +1,19 @@
 {
-  "name": "hedera-agent-kit-nextjs-example",
-  "version": "0.1.0",
+  "name": "hedera-verse",
+  "version": "1.0.0",
+  "description": "An Agentic Gaming Platform on Hedera Blockchain",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "bun build:prisma && next build",
     "build:prisma": "prisma generate --no-engine",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup:hedera": "bun run scripts/setup-hedera.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:seed": "bun run scripts/seed.ts"
   },
   "dependencies": {
     "@hashgraph/hedera-wallet-connect": "2.0.0-canary.811af2f.0",
