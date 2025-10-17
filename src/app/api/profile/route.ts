@@ -4,11 +4,11 @@ import { db } from "@/lib/db"
 
 export async function GET(req: NextRequest) {
     try {
-        const address = req.nextUrl.searchParams.get("address")
+        const address = req.nextUrl.searchParams.get("address") || req.nextUrl.searchParams.get("accountId")
 
         if (!address) {
             return NextResponse.json(
-                { error: "Wallet address is required" },
+                { error: "Wallet address or account ID is required" },
                 { status: 400 }
             )
         }
@@ -46,11 +46,11 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
     try {
-        const address = req.nextUrl.searchParams.get("address")
+        const address = req.nextUrl.searchParams.get("address") || req.nextUrl.searchParams.get("accountId")
 
         if (!address) {
             return NextResponse.json(
-                { error: "Wallet address is required" },
+                { error: "Wallet address or account ID is required" },
                 { status: 400 }
             )
         }

@@ -11,7 +11,7 @@ import { Loader2, Trophy, History, Wallet, Gamepad, Calendar } from "lucide-reac
 import Link from "next/link"
 import Image from "next/image"
 import { HederaConnectButton } from "@/components/HederaConnectButton"
-import { useHederaWallet } from "@/contexts/HederaWalletContext"
+import { useDAppConnector } from "@/components/client-providers"
 import { GameScoreCard } from "@/components/profile/GameScoreCard"
 
 interface UserProfile {
@@ -56,7 +56,9 @@ interface GameActivity {
 }
 
 export default function ProfilePage() {
-    const { accountId, isConnected } = useHederaWallet()
+    const dAppContext = useDAppConnector()
+    const accountId = dAppContext?.userAccountId
+    const isConnected = !!accountId
 
     const [profile, setProfile] = useState<UserProfile | null>(null)
     const [transactions, setTransactions] = useState<Transaction[]>([])

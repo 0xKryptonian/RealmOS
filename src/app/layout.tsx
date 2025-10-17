@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import type { ReactNode } from 'react';
 import { ClientProviders } from '@/components/client-providers';
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,13 +17,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'HederaVerse - Agentic Gaming on Hedera',
-  description: 'Play, Earn, and Own with AI-powered gaming on Hedera blockchain. NFT rewards, tournaments, and immersive experiences.',
-  keywords: ['Hedera', 'Gaming', 'NFT', 'Blockchain', 'AI Agents', 'Web3', 'Play-to-Earn'],
+  title: 'HederaVerse - AI-Powered Gaming on Hedera',
+  description: 'Play games, earn HBAR rewards, and own your achievements. The first AI-powered gaming platform on Hedera with instant rewards and ultra-low fees.',
+  keywords: ['Hedera', 'Gaming', 'NFT', 'Blockchain', 'AI Agents', 'Web3', 'Play-to-Earn', 'HBAR'],
   authors: [{ name: 'HederaVerse Team' }],
   openGraph: {
-    title: 'HederaVerse - Agentic Gaming Platform',
-    description: 'Next-generation gaming with AI agents and NFTs on Hedera',
+    title: 'HederaVerse - AI-Powered Gaming on Hedera',
+    description: 'Play games, earn HBAR rewards instantly. Built on the world\'s most sustainable blockchain.',
     type: 'website',
   },
 };
@@ -32,10 +34,14 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className="dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}>
         <ClientProviders>
-          {children}
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
         </ClientProviders>
       </body>
     </html>

@@ -70,7 +70,8 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
             const transaction = new TransferTransaction()
                 .addHbarTransfer(AccountId.fromString(PLATFORM_ACCOUNT_ID), Hbar.fromString(`-${WINNER_REWARD_HBAR}`))
                 .addHbarTransfer(AccountId.fromString(userAccountId), Hbar.fromString(`${WINNER_REWARD_HBAR}`))
-                .setTransactionMemo(`Chess Win Reward - ${moveCount} moves`);
+                .setTransactionMemo(`Chess Win Reward - ${moveCount} moves`)
+                .setNodeAccountIds([AccountId.fromString("0.0.3")]);
 
             // Freeze and convert to bytes
             const frozenTx = await transaction.freezeWithSigner(dAppConnector.signers[0]);

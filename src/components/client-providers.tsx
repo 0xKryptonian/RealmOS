@@ -44,12 +44,13 @@ export function ClientProviders({ children }: ClientProvidersProps) {
   // Listen for account/session changes using events$
   useEffect(() => {
     if (!dAppConnector) return;
-    const subscription = (dAppConnector as any).events$?.subscribe((event: { name: string; data: any }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subscription = (dAppConnector as any).events$?.subscribe((event: { name: string; data: Record<string, unknown> }) => {
       if (event.name === 'accountsChanged' || event.name === 'chainChanged') {
         setUserAccountId(dAppConnector.signers?.[0]?.getAccountId().toString() ?? null);
         // Try to get topic from event data
         if (event.data && event.data.topic) {
-          setSessionTopic(event.data.topic);
+          setSessionTopic(event.data.topic as string);
         } else if (dAppConnector.signers?.[0]?.topic) {
           setSessionTopic(dAppConnector.signers[0].topic);
         } else {
@@ -115,7 +116,9 @@ export function ClientProviders({ children }: ClientProvidersProps) {
 
   return (
     <DAppConnectorContext.Provider value={{ dAppConnector, userAccountId, sessionTopic, disconnect, refresh }}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
     </DAppConnectorContext.Provider>
   );
 }

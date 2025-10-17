@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
@@ -44,21 +44,28 @@ export function GamePaymentModal({ isOpen, onClose, gamePath, gameName }: GamePa
         setError(null)
 
         try {
-            // Create transfer transaction
+            // Get the signer from dAppConnector
+            const signer = dAppConnector.signers[0];
+            if (!signer) {
+                throw new Error("No signer available");
+            }
+
+            // Create and execute transfer transaction using signAndExecuteTransaction
             const transaction = new TransferTransaction()
-                .addHbarTransfer(AccountId.fromString(userAccountId), Hbar.fromString(`-${GAME_ENTRY_FEE_HBAR}`))
-                .addHbarTransfer(AccountId.fromString(PLATFORM_ACCOUNT_ID), Hbar.fromString(`${GAME_ENTRY_FEE_HBAR}`))
+                .addHbarTransfer(AccountId.fromString(userAccountId), new Hbar(-GAME_ENTRY_FEE_HBAR))
+                .addHbarTransfer(AccountId.fromString(PLATFORM_ACCOUNT_ID), new Hbar(GAME_ENTRY_FEE_HBAR))
                 .setTransactionMemo(`Game Entry: ${gameName}`)
+                .setNodeAccountIds([AccountId.fromString("0.0.3")]);
 
-            // Freeze and convert to bytes
-            const frozenTx = await transaction.freezeWithSigner(dAppConnector.signers[0])
-            const txBytes = Buffer.from(frozenTx.toBytes()).toString('base64')
+            // Freeze with signer and convert to bytes
+            const frozenTx = await transaction.freezeWithSigner(signer);
+            const txBytes = Buffer.from(frozenTx.toBytes()).toString('base64');
 
-            // Sign and execute
+            // Sign and execute via WalletConnect
             const result = await dAppConnector.signAndExecuteTransaction({
                 signerAccountId: userAccountId,
                 transactionList: txBytes,
-            })
+            });
 
             const transactionId = 'transactionId' in result ? result.transactionId : null
             
