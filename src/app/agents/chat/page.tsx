@@ -155,29 +155,29 @@ export default function AgentsChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black pt-20 pb-10">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-black">
+      <div className="max-w-7xl mx-auto px-4 pt-20 pb-16 flex flex-col gap-6">
         {/* Header */}
-        <div className="mb-6">
+        <div>
           <Link href="/agents">
-            <Button variant="ghost" className="text-gray-400 hover:text-white mb-4">
+            <Button variant="ghost" className="text-gray-400 hover:text-white mb-2">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Agents
             </Button>
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">AI Agent Chat</h1>
-          <p className="text-gray-400">
+          <h1 className="text-3xl font-bold text-white mb-1">AI Agent Chat</h1>
+          <p className="text-gray-400 text-sm">
             Select an agent and start chatting to get personalized assistance
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid lg:grid-cols-4 gap-4">
           {/* Agent Selection Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             <Card className="bg-white/5 backdrop-blur-sm border-white/10 sticky top-24">
               <CardHeader>
-                <CardTitle className="text-white">Select Agent</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="text-white text-lg">Select Agent</CardTitle>
+                <CardDescription className="text-gray-400 text-sm">
                   Choose your AI assistant
                 </CardDescription>
               </CardHeader>
@@ -189,7 +189,7 @@ export default function AgentsChatPage() {
                     <button
                       key={agent.id}
                       onClick={() => handleAgentChange(agent)}
-                      className={`w-full text-left p-4 rounded-lg transition-all ${
+                      className={`w-full text-left p-3 rounded-lg transition-all ${
                         isSelected
                           ? 'bg-[#98ee2c]/20 border-2 border-[#98ee2c]'
                           : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
@@ -197,15 +197,15 @@ export default function AgentsChatPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center`}
+                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center flex-shrink-0`}
                         >
                           <Icon className="h-5 w-5 text-white" />
                         </div>
-                        <div className="flex-1">
-                          <div className="text-white font-semibold text-sm">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-semibold text-sm truncate">
                             {agent.name}
                           </div>
-                          <div className="text-gray-400 text-xs">
+                          <div className="text-gray-400 text-xs truncate">
                             {agent.description}
                           </div>
                         </div>
@@ -218,35 +218,35 @@ export default function AgentsChatPage() {
           </div>
 
           {/* Chat Area */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white/5 backdrop-blur-sm border-white/10 h-[calc(100vh-200px)] flex flex-col">
-              <CardHeader className="border-b border-white/10">
+          <div className="lg:col-span-3 flex flex-col gap-4">
+            <Card className="bg-white/5 backdrop-blur-sm border-white/10 min-h-[70vh] flex flex-col">
+              <CardHeader className="border-b border-white/10 flex-none py-3">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedAgent.color} flex items-center justify-center`}
+                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${selectedAgent.color} flex items-center justify-center flex-shrink-0`}
                   >
                     {(() => {
                       const Icon = selectedAgent.icon;
-                      return <Icon className="h-6 w-6 text-white" />;
+                      return <Icon className="h-5 w-5 text-white" />;
                     })()}
                   </div>
-                  <div>
-                    <CardTitle className="text-white">
+                  <div className="min-w-0">
+                    <CardTitle className="text-white text-lg">
                       {selectedAgent.name} Agent
                     </CardTitle>
-                    <CardDescription className="text-gray-400">
+                    <CardDescription className="text-gray-400 text-sm truncate">
                       {selectedAgent.description}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 flex flex-col p-0">
-                <div className="flex-1 overflow-hidden">
+              <CardContent className="flex-1 flex flex-col p-0 min-h-[0]">
+                <div className="flex-1 min-h-0">
                   <Chat chatHistory={chatHistory} isLoading={isPending} />
                 </div>
 
-                <div className="p-4 border-t border-white/10">
+                <div className="flex-none p-4 border-t border-white/10 bg-zinc-900/50">
                   <ChatInput
                     handleUserMessage={handleUserMessage}
                     prompt={prompt}

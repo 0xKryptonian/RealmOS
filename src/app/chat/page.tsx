@@ -65,18 +65,24 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen w-full bg-zinc-900 flex items-center justify-center flex-col">
-      <main className="w-4xl h-full flex flex-col">
+    <div className="h-screen w-full bg-zinc-900 flex flex-col overflow-hidden">
+      <div className="flex-none">
         <Header />
+      </div>
 
-        <Chat chatHistory={chatHistory} isLoading={isPending} />
+      <main className="flex-1 flex flex-col max-w-4xl w-full mx-auto px-4 pb-4 min-h-0">
+        <div className="flex-1 overflow-hidden mb-4">
+          <Chat chatHistory={chatHistory} isLoading={isPending} />
+        </div>
 
-        <ChatInput
-          handleUserMessage={handleUserMessage}
-          prompt={prompt}
-          setPrompt={setPrompt}
-          isPending={isPending}
-        />
+        <div className="flex-none">
+          <ChatInput
+            handleUserMessage={handleUserMessage}
+            prompt={prompt}
+            setPrompt={setPrompt}
+            isPending={isPending}
+          />
+        </div>
       </main>
     </div>
   );
