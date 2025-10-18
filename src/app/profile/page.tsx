@@ -163,7 +163,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="container mx-auto py-10 px-4">
+        <div className="container mx-auto pb-10 pt-28 px-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Summary */}
                 <div className="lg:col-span-1">

@@ -49,19 +49,22 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const user = await db.user.findUnique({
+        // Find or create user by wallet address
+        let user = await db.user.findUnique({
             where: { walletAddress: address },
         })
 
         if (!user) {
-            return NextResponse.json(
-                { error: "User not found" },
-                { status: 404 }
-            )
+            // Create a new user if they don't exist
+            user = await db.user.create({
+                data: {
+                    walletAddress: address,
+                },
+            })
         }
 
         const data = await req.json()
-        const { type, amount, txHash, status, description, tokenSymbol = "REALM" } = data
+        const { type, amount, txHash, status, description, tokenSymbol = "HBAR" } = data
 
         const transaction = await db.transaction.create({
             data: {

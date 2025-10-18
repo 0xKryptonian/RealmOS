@@ -36,6 +36,7 @@ export async function recordGamePayment(params: GamePaymentParams) {
                 txHash: params.txHash,
                 status: "COMPLETED",
                 description: `Payment for playing game: ${params.gameId}`,
+                tokenSymbol: "HBAR",
             }),
         })
 
