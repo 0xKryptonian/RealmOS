@@ -91,25 +91,28 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-          NFT Marketplace
-        </h1>
-        <p className="text-muted-foreground">
-          Trade game assets, achievements, and profile NFTs
-        </p>
-      </div>
+    <div className="min-h-screen bg-black pt-24 pb-20">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
+              NFT Marketplace
+            </span>
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Trade game assets, achievements, and profile NFTs
+          </p>
+        </div>
 
       {/* Filters and Search */}
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             placeholder="Search NFTs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
           />
         </div>
 
@@ -166,16 +169,16 @@ export default function MarketplacePage() {
             </div>
           ) : filteredListings.length === 0 ? (
             <div className="text-center py-12">
-              <Tag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No listings found</h3>
-              <p className="text-muted-foreground">
+              <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
+              <p className="text-gray-400">
                 {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredListings.map((listing) => (
-                <Card key={listing.id} className="group hover:shadow-lg transition-shadow">
+                <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
                   <CardHeader className="p-0">
                     <div className="relative aspect-square overflow-hidden rounded-t-lg">
                       {listing.nft.metadata?.image ? (
@@ -185,8 +188,8 @@ export default function MarketplacePage() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                          <Tag className="w-16 h-16 text-muted-foreground" />
+                        <div className="w-full h-full bg-gradient-to-br from-[#98ee2c]/20 to-[#7bc922]/20 flex items-center justify-center">
+                          <Tag className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
                       {listing.nft.rarity && (
@@ -200,10 +203,10 @@ export default function MarketplacePage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-semibold truncate">
+                        <h3 className="font-semibold truncate text-white">
                           {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-400">
                           {listing.nft.category}
                         </p>
                       </div>
@@ -211,8 +214,8 @@ export default function MarketplacePage() {
 
                     <div className="flex items-center justify-between mt-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">Price</p>
-                        <p className="font-bold text-lg">
+                        <p className="text-xs text-gray-400">Price</p>
+                        <p className="font-bold text-lg text-[#98ee2c]">
                           {listing.price} {listing.currency}
                         </p>
                       </div>
@@ -221,7 +224,7 @@ export default function MarketplacePage() {
 
                   <CardFooter className="p-4 pt-0">
                     <Button
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
                       onClick={() => handleBuy(listing.id)}
                       disabled={!userAccountId}
                     >
@@ -236,18 +239,19 @@ export default function MarketplacePage() {
 
         <TabsContent value="trending">
           <div className="text-center py-12">
-            <TrendingUp className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Trending items coming soon</h3>
+            <TrendingUp className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">Trending items coming soon</h3>
           </div>
         </TabsContent>
 
         <TabsContent value="new">
           <div className="text-center py-12">
-            <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">New listings coming soon</h3>
+            <Clock className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">New listings coming soon</h3>
           </div>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

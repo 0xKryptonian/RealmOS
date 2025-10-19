@@ -350,7 +350,7 @@ export default function ProfilePage() {
                                                             <h3 className="text-lg font-bold">{stat.game.name}</h3>
                                                             <div className="flex items-center text-sm text-gray-400">
                                                                 <span className="mr-3">Played: {stat.playCount} times</span>
-                                                                {stat.transactionTimes.length > 0 && (
+                                                                {stat.transactionTimes && stat.transactionTimes.length > 0 && (
                                                                     <span>
                                                                         Last played: {new Date(stat.transactionTimes[stat.transactionTimes.length - 1]).toLocaleString()}
                                                                     </span>
