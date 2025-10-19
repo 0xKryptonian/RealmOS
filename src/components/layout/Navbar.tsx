@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Gamepad2, Sparkles, Trophy, Users, ShoppingBag, Wallet, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDAppConnector } from "@/components/client-providers";
+// import { WalletBalance } from "@/components/wallet-balance";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,10 +18,10 @@ import {
 
 const navigation = [
   { name: "Games", href: "/games", icon: Gamepad2 },
+  { name: "Tournaments", href: "/tournaments", icon: Trophy },
   { name: "AI Agents", href: "/agents", icon: Sparkles },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },
-  { name: "About", href: "/about", icon: Users },
 ];
 
 export function Navbar() {
