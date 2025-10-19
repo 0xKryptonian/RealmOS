@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import TetrisGame from '@/components/tetris-game';
 import { GameWrapper } from '@/components/game-wrapper';

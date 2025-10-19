@@ -16,27 +16,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user and game
+    // Get user
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    const game = await prisma.game.findUnique({
-      where: { id: gameId },
-    });
-
-    if (!user || !game) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'User or game not found' },
+        { error: 'User not found' },
         { status: 404 }
       );
+    }
+
+    // Get or create game (using slug as gameId)
+    let game = await prisma.game.findFirst({
+      where: {
+        OR: [
+          { id: gameId },
+          { slug: gameId },
+        ],
+      },
+    });
+
+    if (!game) {
+      // Auto-create game if it doesn't exist
+      const gameNames: Record<string, string> = {
+        tetris: 'Tetris',
+        chess: 'Chess',
+        sudoku: 'Sudoku',
+        wordle: 'Wordle',
+        'crypto-crossword': 'Crypto Crossword',
+        'snake-ladder': 'Snake & Ladder',
+        'candy-saga': 'Candy Saga',
+      };
+
+      game = await prisma.game.create({
+        data: {
+          name: gameNames[gameId] || gameId.charAt(0).toUpperCase() + gameId.slice(1),
+          slug: gameId,
+          description: `Play ${gameNames[gameId] || gameId} and earn REALM tokens!`,
+        },
+      });
     }
 
     // Save score to database
     const gameScore = await prisma.gameScore.create({
       data: {
         userId,
-        gameId,
+        gameId: game.id, // Use the actual game ID from database
         score,
         metadata,
       },
@@ -73,7 +100,7 @@ export async function POST(request: NextRequest) {
     const userGame = await prisma.userGame.findUnique({
       where: {
         gameId_userId: {
-          gameId,
+          gameId: game.id, // Use actual database ID, not slug
           userId,
         },
       },
@@ -120,12 +147,12 @@ export async function POST(request: NextRequest) {
       await prisma.userGame.upsert({
         where: {
           gameId_userId: {
-            gameId,
+            gameId: game.id, // Use actual database ID, not slug
             userId,
           },
         },
         create: {
-          gameId,
+          gameId: game.id, // Use actual database ID, not slug
           userId,
           score,
           highScore: score,

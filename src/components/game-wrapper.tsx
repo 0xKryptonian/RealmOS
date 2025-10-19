@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Wallet, Trophy, Coins } from 'lucide-react';
 import { toast } from 'sonner';
-import { WalletBalance } from './wallet-balance';
+// import { WalletBalance } from './wallet-balance';
 
 interface GameWrapperProps {
   gameId: string;
@@ -51,7 +51,7 @@ export function GameWrapper({ gameId, gameName, children }: GameWrapperProps) {
             Play and earn REALM tokens for high scores
           </p>
         </div>
-        {userAccountId && <WalletBalance />}
+        {userAccountId}
       </div>
 
       {/* Connect Wallet Prompt */}

@@ -54,6 +54,8 @@ bun run dev
 #### Step 1: Update game page (2 min)
 ```tsx
 // Example: src/app/games/chess/page.tsx
+'use client';  // ⚠️ IMPORTANT: Add this at the top!
+
 import { GameWrapper } from '@/components/game-wrapper';
 import ChessGameApp from '@/components/chess-game';
 

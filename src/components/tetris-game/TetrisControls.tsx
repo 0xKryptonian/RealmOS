@@ -65,24 +65,24 @@ const GameOverlay: React.FC<GameOverlayProps> = ({
                     <div className="space-y-4 my-4">
                         {isNewHighScore ? (
                             <div className="text-center animate-pulse">
-                                <p className="text-lg font-bold">Congratulations!</p>
-                                <p>You&apos;ve set a new high score of <span className="font-bold text-xl">{score}</span>!</p>
+                                <div className="text-lg font-bold">Congratulations!</div>
+                                <div>You&apos;ve set a new high score of <span className="font-bold text-xl">{score}</span>!</div>
                             </div>
                         ) : (
                             <div className="text-center">
-                                <p>Your final score is <span className="font-bold">{score}</span>.</p>
-                                <p>The high score is <span className="font-bold">{highScore}</span>.</p>
+                                <div>Your final score is <span className="font-bold">{score}</span>.</div>
+                                <div>The high score is <span className="font-bold">{highScore}</span>.</div>
                             </div>
                         )}
 
                         <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
                             <div className="bg-muted/30 p-2 rounded text-center">
-                                <p className="text-muted-foreground">Games Played</p>
-                                <p className="font-bold">{gameStats.gamesPlayed}</p>
+                                <div className="text-muted-foreground">Games Played</div>
+                                <div className="font-bold">{gameStats.gamesPlayed}</div>
                             </div>
                             <div className="bg-muted/30 p-2 rounded text-center">
-                                <p className="text-muted-foreground">Best Level</p>
-                                <p className="font-bold">{gameStats.bestLevel}</p>
+                                <div className="text-muted-foreground">Best Level</div>
+                                <div className="font-bold">{gameStats.bestLevel}</div>
                             </div>
                         </div>
 
