@@ -12,8 +12,8 @@
 1. **AI Mini-Game Generator** - Let users create games with AI (like HederaMinihub)
 2. **3D Immersive Worlds** - Add metaverse elements (inspired by SafariVerse)
 3. **Social Gaming Hub** - Community features, guilds, tournaments
-4. **Mobile-First Experience** - React Native app for iOS/Android
-5. **Esports Infrastructure** - Professional tournament system
+4. **Mobile-First Experience** - React Native app for iOS/Android ( postpone it)
+5. **Esports Infrastructure** - Professional tournament system ( seems more important)
 6. **Cross-Platform Assets** - NFTs that work across all games
 
 ### Success Metrics
