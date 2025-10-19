@@ -73,7 +73,12 @@ export const TETROMINOS = {
 };
 
 // GameContainer (Main Component)
-const TetrisGame = () => {
+interface TetrisGameProps {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
+
+const TetrisGame = ({ onGameEnd, submitting }: TetrisGameProps = {}) => {
     // Game state
     const [board, setBoard] = useState(createEmptyBoard());
     const [currentPiece, setCurrentPiece] = useState<Tetromino | null>(null);
@@ -232,6 +237,18 @@ const TetrisGame = () => {
             localStorage.setItem('tetrisSessions', JSON.stringify(sessions.slice(-10))); // Keep last 10 sessions
         }
 
+        // Submit score to blockchain if callback provided
+        if (onGameEnd && !submitting) {
+            onGameEnd(score, {
+                level,
+                lines,
+                duration: Math.floor((Date.now() - gameStartTime.current) / 1000),
+                highScore: score > highScore
+            }).catch(err => {
+                console.error('Failed to submit score:', err);
+            });
+        }
+
         // Add visual effect to show game over
         const boardElement = document.querySelector('.grid-cols-10');
         if (boardElement) {
@@ -240,7 +257,7 @@ const TetrisGame = () => {
                 boardElement.classList.remove('opacity-50');
             }, 2000);
         }
-    }, [score, highScore, lines, level, gameStats]);
+    }, [score, highScore, lines, level, gameStats, onGameEnd, submitting]);
 
     // Update the ref whenever handleGameOver changes
     useEffect(() => {

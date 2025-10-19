@@ -1,14 +1,15 @@
-import React from 'react'
-import TetrisGame from '@/components/tetris-game'
-import { Toaster } from "sonner"
+import React from 'react';
+import TetrisGame from '@/components/tetris-game';
+import { GameWrapper } from '@/components/game-wrapper';
 
 const TetrisPage = () => {
-    return (
-        <div className="container mx-auto py-8">
-            <TetrisGame />
-            <Toaster position="top-center" />
-        </div>
-    )
-}
+  return (
+    <GameWrapper gameId="tetris" gameName="Tetris">
+      {({ onGameEnd, submitting }) => (
+        <TetrisGame onGameEnd={onGameEnd} submitting={submitting} />
+      )}
+    </GameWrapper>
+  );
+};
 
-export default TetrisPage
+export default TetrisPage;
