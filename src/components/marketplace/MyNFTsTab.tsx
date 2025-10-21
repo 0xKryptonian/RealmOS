@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Tag, Loader2 } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { ListNFTModal } from './ListNFTModal';
+import { PROFILE_NFT, GAME_NFT, ACHIEVEMENT_NFT, HEDERA_NETWORK } from '@/lib/constants';
 
 interface NFT {
   id: string;
@@ -29,57 +30,120 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
   const [selectedNFT, setSelectedNFT] = useState<NFT | null>(null);
   const [showListModal, setShowListModal] = useState(false);
 
-  useEffect(() => {
-    if (userAccountId) {
-      fetchMyNFTs();
-    }
-  }, [userAccountId]);
+  const mirrorBaseUrl = useMemo(() => {
+    const urls = {
+      mainnet: 'https://mainnet-public.mirrornode.hedera.com/api/v1',
+      testnet: 'https://testnet.mirrornode.hedera.com/api/v1',
+    } as const;
+    const net = (HEDERA_NETWORK as unknown as keyof typeof urls) || 'testnet';
+    return urls[net] || urls.testnet;
+  }, []);
 
-  const fetchMyNFTs = async () => {
+  const fetchMyNFTs = useCallback(async () => {
     if (!userAccountId) return;
-
     setLoading(true);
     try {
-      const response = await fetch(`/api/profile/nfts?accountId=${userAccountId}`);
-      if (!response.ok) throw new Error('Failed to fetch NFTs');
+      const tokenIds = [PROFILE_NFT, GAME_NFT, ACHIEVEMENT_NFT];
 
-      const data = await response.json();
-      setNfts(data.nfts || []);
+      // Fetch NFTs for each collection concurrently
+      const results = await Promise.all(
+        tokenIds.map(async (tokenId) => {
+          const url = `${mirrorBaseUrl}/accounts/${userAccountId}/nfts?limit=100&order=desc&token.id=${tokenId}`;
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) return [] as any[];
+          const data = await res.json();
+          return (data.nfts || []).map((n: any) => ({ ...n, _collectionTokenId: tokenId }));
+        })
+      );
+
+      const flat: any[] = results.flat();
+
+      // Optionally fetch per-NFT metadata (may be base64/hex encoded). We try to fetch individual NFT to get metadata if missing.
+      const enriched: NFT[] = await Promise.all(
+        flat.map(async (nft) => {
+          let meta: any = undefined;
+          if (!nft.metadata) {
+            try {
+              const infoRes = await fetch(`${mirrorBaseUrl}/tokens/${nft.token_id}/nfts/${nft.serial_number}`, { cache: 'no-store' });
+              if (infoRes.ok) {
+                const info = await infoRes.json();
+                meta = decodeNFTMetadata(info.metadata);
+              }
+            } catch {}
+          } else {
+            meta = decodeNFTMetadata(nft.metadata);
+          }
+
+          return {
+            id: `${nft.token_id}-${nft.serial_number}`,
+            tokenId: nft.token_id,
+            serialNumber: String(nft.serial_number),
+            metadata: meta || {},
+            category: mapCollectionToCategory(nft._collectionTokenId),
+            owner: nft.account_id,
+            listings: [],
+          } as NFT;
+        })
+      );
+
+      setNfts(enriched);
     } catch (error) {
-      console.error('Error fetching NFTs:', error);
+      console.error('Error fetching NFTs from Mirror Node:', error);
       toast.error('Failed to load your NFTs');
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAccountId, mirrorBaseUrl]);
+
+  useEffect(() => {
+    if (userAccountId) {
+      fetchMyNFTs();
+    }
+  }, [userAccountId, fetchMyNFTs]);
+
+  
+
+  function decodeNFTMetadata(raw?: string): any {
+    if (!raw) return undefined;
+    try {
+      let decoded: string;
+      if (raw.startsWith('\\x')) {
+        // hex -> utf8
+        const hex = raw.slice(2);
+        const bytes = new Uint8Array(hex.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+        decoded = new TextDecoder().decode(bytes);
+      } else {
+        // base64 -> utf8
+        const binary = typeof atob !== 'undefined' ? atob(raw) : '';
+        const bytes = new Uint8Array(binary.split('').map((c) => c.charCodeAt(0)));
+        decoded = new TextDecoder().decode(bytes);
+      }
+      try {
+        return JSON.parse(decoded);
+      } catch {
+        // not JSON, return as string/object
+        return { image: decoded };
+      }
+    } catch {
+      return undefined;
+    }
+  }
+
+  function mapCollectionToCategory(tokenId: string): string {
+    switch (tokenId) {
+      case PROFILE_NFT: return 'PROFILE';
+      case GAME_NFT: return 'GAME_ASSET';
+      case ACHIEVEMENT_NFT: return 'ACHIEVEMENT';
+      default: return 'NFT';
+    }
+  }
 
   const handleListNFT = (nft: NFT) => {
     setSelectedNFT(nft);
     setShowListModal(true);
   };
 
-  const handleCancelListing = async (listingId: string) => {
-    try {
-      toast.loading('Cancelling listing...', { id: 'cancel' });
-
-      const response = await fetch('/api/marketplace/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listingId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to cancel listing');
-      }
-
-      toast.success('Listing cancelled', { id: 'cancel' });
-      fetchMyNFTs();
-    } catch (error: any) {
-      console.error('Cancel listing error:', error);
-      toast.error(error.message || 'Failed to cancel listing', { id: 'cancel' });
-    }
-  };
+  // No cancel listing in UI until we wire on-chain cancel flow
 
   const getRarityColor = (rarity?: string) => {
     switch (rarity?.toLowerCase()) {
@@ -90,13 +154,7 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
     }
   };
 
-  const isListed = (nft: NFT) => {
-    return nft.listings?.some(l => l.status === 'ACTIVE');
-  };
-
-  const getActiveListing = (nft: NFT) => {
-    return nft.listings?.find(l => l.status === 'ACTIVE');
-  };
+  // On-chain only: we don't infer/track listing status here
 
   if (!userAccountId) {
     return (
@@ -142,9 +200,6 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {nfts.map((nft) => {
-          const listed = isListed(nft);
-          const listing = getActiveListing(nft);
-
           return (
             <Card key={nft.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
               <CardHeader className="p-0">
@@ -165,11 +220,6 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
                       {nft.rarity}
                     </Badge>
                   )}
-                  {listed && (
-                    <Badge className="absolute top-2 left-2 bg-[#98ee2c] text-black">
-                      Listed
-                    </Badge>
-                  )}
                 </div>
               </CardHeader>
 
@@ -184,34 +234,15 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
                     </p>
                   </div>
                 </div>
-
-                {listed && listing && (
-                  <div className="mt-4 p-2 bg-white/5 rounded">
-                    <p className="text-xs text-gray-400">Listed for</p>
-                    <p className="font-bold text-[#98ee2c]">
-                      {listing.price} {listing.currency}
-                    </p>
-                  </div>
-                )}
               </CardContent>
 
               <CardFooter className="p-4 pt-0 flex gap-2">
-                {listed ? (
-                  <Button
-                    variant="outline"
-                    className="w-full border-red-500/50 text-red-500 hover:bg-red-500/10"
-                    onClick={() => handleCancelListing(listing.id)}
-                  >
-                    Cancel Listing
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
-                    onClick={() => handleListNFT(nft)}
-                  >
-                    List for Sale
-                  </Button>
-                )}
+                <Button
+                  className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                  onClick={() => handleListNFT(nft)}
+                >
+                  List for Sale
+                </Button>
               </CardFooter>
             </Card>
           );

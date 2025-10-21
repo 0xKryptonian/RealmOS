@@ -16,6 +16,7 @@ import { HederaConnectButton } from "@/components/HederaConnectButton"
 import { useDAppConnector } from "@/components/client-providers"
 import { GameScoreCard } from "@/components/profile/GameScoreCard"
 import { toast } from "sonner"
+import { MyNFTsTab } from "@/components/marketplace/MyNFTsTab"
 
 interface UserProfile {
     id: string
@@ -73,6 +74,17 @@ export default function ProfilePage() {
     const [isEditingUsername, setIsEditingUsername] = useState(false)
     const [newUsername, setNewUsername] = useState("")
     const [isSavingUsername, setIsSavingUsername] = useState(false)
+    const [hfsGames, setHfsGames] = useState<Array<{
+        id: string;
+        name: string;
+        slug: string;
+        hfsFileId: string | null;
+        hfsMetadataId: string | null;
+        imagePath: string | null;
+        description: string | null;
+        fileUrl: string | null;
+        metadataUrl: string | null;
+    }>>([])
 
     // Fetch REALM token balance from API
     useEffect(() => {
@@ -160,6 +172,20 @@ export default function ProfilePage() {
             fetchProfileData()
         }
     }, [isConnected, accountId, fetchProfileData])
+
+    // useEffect(() => {
+    //     const loadHfsGames = async () => {
+    //         if (!accountId) return;
+    //         try {
+    //             const res = await fetch(`/api/profile/hfs?accountId=${accountId}`);
+    //             const data = await res.json();
+    //             if (data.success) setHfsGames(data.data || []);
+    //         } catch (e) {
+    //             console.error('Failed to fetch HFS games', e);
+    //         }
+    //     };
+    //     loadHfsGames();
+    // }, [accountId]);
 
     const gamesPlayedCount = transactions.filter(tx => tx.type === "GAME_PAYMENT").length;
 
@@ -349,7 +375,7 @@ export default function ProfilePage() {
                 {/* Tabs for different sections */}
                 <div className="lg:col-span-2">
                     <Tabs defaultValue="transactions" className="w-full">
-                        <TabsList className="grid grid-cols-3 mb-8 bg-[#202020]">
+                        <TabsList className="grid grid-cols-4 mb-8 bg-[#202020]">
                             <TabsTrigger value="transactions" className="data-[state=active]:bg-[#98ee2c] data-[state=active]:text-black">
                                 <History className="mr-2 h-4 w-4" />
                                 Transactions
@@ -362,6 +388,10 @@ export default function ProfilePage() {
                             <TabsTrigger value="achievements" className="data-[state=active]:bg-[#98ee2c] data-[state=active]:text-black">
                                 <Calendar className="mr-2 h-4 w-4" />
                                 Events
+                            </TabsTrigger>
+                            <TabsTrigger value="nfts" className="data-[state=active]:bg-[#98ee2c] data-[state=active]:text-black">
+                                <Wallet className="mr-2 h-4 w-4" />
+                                NFTs
                             </TabsTrigger>
                         </TabsList>
 
@@ -509,6 +539,19 @@ export default function ProfilePage() {
                                             ))}
                                         </div>
                                     )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* NFTs Tab */}
+                        <TabsContent value="nfts">
+                            <Card className="bg-[#202020] border-gray-700 text-white">
+                                <CardHeader>
+                                    <CardTitle>Your NFTs</CardTitle>
+                                    <CardDescription className="text-gray-400">NFTs associated with your account</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <MyNFTsTab userAccountId={accountId || undefined} />
                                 </CardContent>
                             </Card>
                         </TabsContent>

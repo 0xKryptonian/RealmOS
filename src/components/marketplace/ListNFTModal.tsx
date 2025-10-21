@@ -7,6 +7,9 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
+import { useDAppConnector } from '@/components/client-providers';
+import { ContractExecuteTransaction, ContractFunctionParameters, ContractId, AccountId, TokenId } from '@hashgraph/sdk';
+import { NFT_MARKETPLACE } from '@/lib/constants';
 import { Loader2 } from 'lucide-react';
 
 interface ListNFTModalProps {
@@ -16,7 +19,7 @@ interface ListNFTModalProps {
     id: string;
     tokenId: string;
     serialNumber: string;
-    metadata: any;
+    metadata: Record<string, unknown>;
     category: string;
   };
   onSuccess: () => void;
@@ -28,6 +31,9 @@ export function ListNFTModal({ open, onClose, nft, onSuccess }: ListNFTModalProp
   const [currency, setCurrency] = useState('HBAR');
   const [listingType, setListingType] = useState('FIXED_PRICE');
   const [duration, setDuration] = useState('7'); // days
+  const dapp = useDAppConnector();
+  const userAccountId = dapp?.userAccountId ?? null;
+  const dAppConnector = dapp?.dAppConnector ?? null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,41 +50,62 @@ export function ListNFTModal({ open, onClose, nft, onSuccess }: ListNFTModalProp
         ? Date.now() + parseInt(duration) * 24 * 60 * 60 * 1000
         : 0;
 
-      const response = await fetch('/api/marketplace/list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nftId: nft.id,
-          price: parseFloat(price),
-          currency,
-          listingType,
-          expiresAt: expiresAt > 0 ? new Date(expiresAt).toISOString() : null,
-        }),
-      });
+      // On-chain listing for HBAR fixed-price via wallet connector
+      if (dAppConnector && dAppConnector.signers?.[0] && userAccountId && currency === 'HBAR' && listingType === 'FIXED_PRICE') {
+        try {
+          const signer = dAppConnector.signers[0];
+          const contractIdStr = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID || NFT_MARKETPLACE;
+          const contractId = ContractId.fromString(contractIdStr);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create listing');
+          const nftContractAddress = TokenId.fromString(nft.tokenId).toSolidityAddress();
+          const royaltyRecipient = AccountId.fromString(userAccountId).toSolidityAddress();
+
+          const priceHbar = parseFloat(price || '0');
+          const expiresSeconds = expiresAt > 0 ? Math.floor(expiresAt / 1000) : 0;
+
+          const execTx = await new ContractExecuteTransaction()
+            .setContractId(contractId)
+            .setGas(300000)
+            .setFunction(
+              'createListing',
+              new ContractFunctionParameters()
+                .addAddress(nftContractAddress)
+                .addUint256(Number(nft.serialNumber))
+                .addUint256(Math.max(0, Math.round(priceHbar * 100_000_000)))
+                .addAddress('0x0000000000000000000000000000000000000000') // paymentToken = HBAR
+                .addUint8(0) // 0 = FIXED_PRICE
+                .addUint256(expiresSeconds)
+                .addUint256(500) // 5% royalty
+                .addAddress(royaltyRecipient)
+            )
+            .setNodeAccountIds([AccountId.fromString('0.0.3')])
+            .freezeWithSigner(signer);
+
+          const txBytes = Buffer.from(execTx.toBytes()).toString('base64');
+          await dAppConnector.signAndExecuteTransaction({
+            signerAccountId: userAccountId,
+            transactionList: txBytes,
+          });
+          toast.success('NFT listed on-chain successfully!');
+          onSuccess();
+          onClose();
+        } catch (onChainErr: unknown) {
+          console.warn('On-chain listing attempt failed. Falling back to DB listing:', onChainErr);
+          throw onChainErr;
+        }
       }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      toast.success('NFT listed successfully!');
-      onSuccess();
-      onClose();
-    } catch (error: any) {
-      console.error('List NFT error:', error);
-      toast.error(error.message || 'Failed to list NFT');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
+    return (
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
       <DialogContent className="sm:max-w-[500px] bg-black border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">List NFT for Sale</DialogTitle>
           <DialogDescription className="text-gray-400">
-            {nft.metadata?.name || `NFT #${nft.serialNumber}`}
+            {typeof (nft.metadata as any)?.name === 'string' ? (nft.metadata as any).name as string : `NFT #${nft.serialNumber}`}
           </DialogDescription>
         </DialogHeader>
 

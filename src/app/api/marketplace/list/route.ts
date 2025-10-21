@@ -4,11 +4,19 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nftId, sellerId, price, currency, listingType, expiresAt } = body;
+    const { nftId, sellerId, price, currency, listingType, expiresAt, contractListingId } = body as {
+      nftId: string;
+      sellerId?: string;
+      price: number | string;
+      currency?: string;
+      listingType?: string;
+      expiresAt?: string | null;
+      contractListingId?: string | number | null;
+    };
 
-    if (!nftId || !sellerId || !price) {
+    if (!nftId || price == null) {
       return NextResponse.json(
-        { error: 'nftId, sellerId, and price are required' },
+        { error: 'nftId and price are required' },
         { status: 400 }
       );
     }
@@ -25,7 +33,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (nft.userId !== sellerId) {
+    const resolvedSellerId = sellerId ?? nft.userId ?? undefined;
+
+    if (!resolvedSellerId) {
+      return NextResponse.json(
+        { error: 'Unable to resolve sellerId for this NFT' },
+        { status: 400 }
+      );
+    }
+
+    if (nft.userId !== resolvedSellerId) {
       return NextResponse.json(
         { error: 'You do not own this NFT' },
         { status: 403 }
@@ -51,7 +68,7 @@ export async function POST(request: NextRequest) {
     const listing = await prisma.marketplaceListing.create({
       data: {
         nftId,
-        sellerId,
+        sellerId: resolvedSellerId,
         price: price.toString(),
         currency: currency || 'HBAR',
         status: 'ACTIVE',
@@ -69,6 +86,24 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Optionally persist on-chain contract listing mapping under NFT.attributes
+    if (contractListingId) {
+      try {
+        const currentNFT = await prisma.nFT.findUnique({ where: { id: nftId } });
+        const currentAttrs = (currentNFT?.attributes as Record<string, unknown> | null) || {};
+        const updatedAttrs = {
+          ...currentAttrs,
+          activeListingContractId: contractListingId,
+        };
+        await prisma.nFT.update({
+          where: { id: nftId },
+          data: { attributes: updatedAttrs as any },
+        });
+      } catch (e) {
+        console.warn('Failed to persist contractListingId on NFT.attributes:', e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

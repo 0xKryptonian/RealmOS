@@ -117,6 +117,44 @@ export default function TournamentDetailPage() {
     toast.success('Tournament link copied to clipboard!');
   };
 
+  const handleSchedulePrizes = async () => {
+    try {
+      const id = (params as any)?.id ?? mockTournament.id;
+      const winners = mockTournament.prizes.slice(0, 3).map((p, idx) => ({
+        position: p.position,
+        amount: typeof p.amount === 'string' ? Number(String(p.amount).split(' ')[0]) : 0,
+        currency: typeof p.amount === 'string' ? String(p.amount).split(' ')[1] || 'HBAR' : 'HBAR',
+        userId: `winner-${idx + 1}`,
+        accountId: null,
+      }));
+
+      const distributionDate = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // +1 hour
+
+      const res = await fetch('/api/scheduled-transactions/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'tournament_prizes',
+          userId: 'system',
+          tournamentData: {
+            tournamentId: String(id),
+            winners,
+            distributionDate,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to schedule prizes');
+      }
+      toast.success('Prize distribution scheduled');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to schedule prizes';
+      toast.error(msg);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black pt-24 pb-20">
       <div className="container mx-auto px-4">
@@ -143,14 +181,22 @@ export default function TournamentDetailPage() {
               </h1>
               <p className="text-gray-400 text-lg">{mockTournament.description}</p>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleShareTournament}
-              className="border-white/10 text-white hover:bg-white/5"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleShareTournament}
+                className="border-white/10 text-white hover:bg-white/5"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+              <Button
+                onClick={handleSchedulePrizes}
+                className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+              >
+                Schedule Prizes
+              </Button>
+            </div>
           </div>
 
           {/* Quick Stats */}

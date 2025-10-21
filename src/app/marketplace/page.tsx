@@ -11,6 +11,8 @@ import { Search, Filter, TrendingUp, Clock, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDAppConnector } from '../../components/client-providers';
 import { MyNFTsTab } from '../../components/marketplace/MyNFTsTab';
+import { ContractExecuteTransaction, ContractFunctionParameters, ContractId, Hbar } from '@hashgraph/sdk';
+import { NFT_MARKETPLACE } from '@/lib/constants';
 
 interface NFTListing {
   id: string;
@@ -34,7 +36,8 @@ interface NFTListing {
 }
 
 export default function MarketplacePage() {
-  const { userAccountId } = useDAppConnector() ?? {};
+  const dapp = useDAppConnector() ?? {} as any;
+  const { userAccountId, dAppConnector } = dapp;
   const [listings, setListings] = useState<NFTListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -80,30 +83,48 @@ export default function MarketplacePage() {
     }
 
     try {
-      toast.loading('Processing purchase...', { id: 'purchase' });
+      toast.loading('Processing purchase on-chain...', { id: 'purchase' });
 
-      const response = await fetch('/api/marketplace/purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          listingId,
-          buyerAccountId: userAccountId,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Purchase failed');
+      // Execute marketplace contract purchase via wallet
+      if (!dAppConnector || !dAppConnector.signers?.[0]) {
+        throw new Error('Wallet connector not ready');
       }
 
-      const data = await response.json();
-      
+      const signer = dAppConnector.signers[0];
+      const contractIdStr = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID || NFT_MARKETPLACE;
+      const contractId = ContractId.fromString(contractIdStr);
+
+      const priceNumber = parseFloat(listing.price || '0');
+
+      const execTx = await new ContractExecuteTransaction()
+        .setContractId(contractId)
+        .setGas(300000)
+        .setPayableAmount(new Hbar(priceNumber))
+        .setFunction('purchaseNFT', new ContractFunctionParameters().addUint256(Number(listingId)))
+        .freezeWithSigner(signer);
+
+      const txBytes = Buffer.from(execTx.toBytes()).toString('base64');
+      await dAppConnector.signAndExecuteTransaction({
+        signerAccountId: userAccountId,
+        transactionList: txBytes,
+      });
+
+      // Update application DB state
+      const dbResponse = await fetch('/api/marketplace/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId, buyerAccountId: userAccountId }),
+      });
+      if (!dbResponse.ok) {
+        const err = await dbResponse.json();
+        throw new Error(err.error || 'Failed to update purchase state');
+      }
+
       toast.success('Purchase successful!', {
         id: 'purchase',
         description: `You now own ${listing.nft.metadata?.name || 'this NFT'}`,
       });
 
-      // Refresh listings
       fetchListings();
     } catch (error: any) {
       console.error('Purchase error:', error);

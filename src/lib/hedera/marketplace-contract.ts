@@ -7,6 +7,7 @@ import {
   AccountId,
 } from '@hashgraph/sdk';
 import { HederaClient } from './client';
+import { NFT_MARKETPLACE } from '@/lib/constants';
 
 /**
  * NFT Marketplace Smart Contract Integration
@@ -329,7 +330,7 @@ export class MarketplaceContract {
  * Helper function to get marketplace contract instance
  */
 export function getMarketplaceContract(): MarketplaceContract {
-  const contractId = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_ID;
+  const contractId = NFT_MARKETPLACE;
   if (!contractId) {
     throw new Error('MARKETPLACE_CONTRACT_ID not configured');
   }

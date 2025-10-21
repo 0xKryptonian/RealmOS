@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { HederaConsensusService } from '@/lib/hedera/consensus';
 import { RewardDistributorAgent } from '@/lib/agents/reward-distributor';
-import { TokenId } from '@hashgraph/sdk';
+import { TopicId } from '@hashgraph/sdk';
+import { LEADERBOARD_TOPIC } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,11 +72,12 @@ export async function POST(request: NextRequest) {
 
     // Submit to HCS for immutable leaderboard
     let hcsTxId;
-    if (process.env.LEADERBOARD_TOPIC_ID) {
-      try {
-        const topicId = TokenId.fromString(process.env.LEADERBOARD_TOPIC_ID);
+    try {
+      const topicString = process.env.LEADERBOARD_TOPIC_ID || LEADERBOARD_TOPIC;
+      if (topicString) {
+        const topicId = TopicId.fromString(topicString);
         const hcsResult = await HederaConsensusService.submitLeaderboardScore(
-          topicId as any,
+          topicId,
           {
             userId,
             gameId,
@@ -91,9 +93,9 @@ export async function POST(request: NextRequest) {
           where: { id: gameScore.id },
           data: { txHash: hcsTxId },
         });
-      } catch (error) {
-        console.error('Failed to submit to HCS:', error);
       }
+    } catch (error) {
+      console.error('Failed to submit to HCS:', error);
     }
 
     // Check for high score and distribute rewards
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest) {
       await prisma.userGame.update({
         where: {
           gameId_userId: {
-            gameId,
+            gameId: game.id, // Use actual database ID, not slug
             userId,
           },
         },
@@ -198,10 +200,11 @@ export async function POST(request: NextRequest) {
         } : null,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error submitting score:', error);
+    const message = error instanceof Error ? error.message : 'Failed to submit score';
     return NextResponse.json(
-      { error: error.message || 'Failed to submit score' },
+      { error: message },
       { status: 500 }
     );
   }
