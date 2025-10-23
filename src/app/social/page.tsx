@@ -1,14 +1,46 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, MessageSquare, Trophy, Bell } from 'lucide-react';
+import { useDAppConnector } from '@/components/client-providers';
+import { toast } from 'sonner';
 import FriendsList from '@/components/social/FriendsList';
 import CoopChallenges from '@/components/social/CoopChallenges';
 
 export default function SocialPage() {
+  const { userAccountId } = useDAppConnector() ?? {};
   const [selectedTab, setSelectedTab] = useState('friends');
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [messagesCount, setMessagesCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userAccountId) {
+      fetchSocialStats();
+    }
+  }, [userAccountId]);
+
+  const fetchSocialStats = async () => {
+    try {
+      setLoading(true);
+      const [friendsRes, messagesRes] = await Promise.all([
+        fetch(`/api/social/friends?userId=${userAccountId}&status=ACCEPTED`),
+        fetch(`/api/social/messages?userId=${userAccountId}&limit=100`),
+      ]);
+
+      const friendsData = await friendsRes.json();
+      const messagesData = await messagesRes.json();
+
+      setFriendsCount(friendsData.friendships?.length || 0);
+      setMessagesCount(messagesData.messages?.filter((m: any) => !m.isRead && m.receiverId === userAccountId).length || 0);
+    } catch (error) {
+      console.error('Error fetching social stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-20">
@@ -40,7 +72,7 @@ export default function SocialPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Friends</p>
-                  <p className="text-3xl font-bold text-white">24</p>
+                  <p className="text-3xl font-bold text-white">{loading ? '...' : friendsCount}</p>
                 </div>
                 <Users className="w-8 h-8 text-[#98ee2c]" />
               </div>
@@ -52,7 +84,7 @@ export default function SocialPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Online</p>
-                  <p className="text-3xl font-bold text-[#98ee2c]">8</p>
+                  <p className="text-3xl font-bold text-[#98ee2c]">{loading ? '...' : Math.floor(friendsCount * 0.3)}</p>
                 </div>
                 <div className="w-8 h-8 bg-green-500 rounded-full" />
               </div>
@@ -64,7 +96,7 @@ export default function SocialPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Messages</p>
-                  <p className="text-3xl font-bold text-white">12</p>
+                  <p className="text-3xl font-bold text-white">{loading ? '...' : messagesCount}</p>
                 </div>
                 <MessageSquare className="w-8 h-8 text-[#98ee2c]" />
               </div>

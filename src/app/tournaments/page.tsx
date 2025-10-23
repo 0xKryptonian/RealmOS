@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Users, Calendar, Clock, Coins, Zap, Crown, Target } from 'lucide-react';
 import { useDAppConnector } from '@/components/client-providers';
 import { toast } from 'sonner';
+import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,89 +22,48 @@ import {
 interface Tournament {
   id: string;
   title: string;
-  game: string;
   description: string;
-  prizePool: string;
-  currency: string;
-  startDate: string;
-  endDate: string;
-  participants: number;
-  maxParticipants: number;
-  status: 'upcoming' | 'active' | 'completed';
-  entryFee?: string;
-  prizes: {
-    position: number;
-    amount: string;
-    nft?: string;
-  }[];
+  imageUrl: string;
+  eventType: string;
+  startTime: string;
+  endTime: string | null;
+  location: string | null;
+  prizePool: string | null;
+  maxParticipants: number | null;
+  isActive: boolean;
+  participants: any[];
+  _count: {
+    participants: number;
+  };
 }
 
-const mockTournaments: Tournament[] = [
-  {
-    id: '1',
-    title: 'Chess Championship',
-    game: 'Chess',
-    description: 'Compete in the ultimate chess tournament. Best of 3 matches.',
-    prizePool: '500',
-    currency: 'HBAR',
-    startDate: '2025-11-01',
-    endDate: '2025-11-07',
-    participants: 24,
-    maxParticipants: 32,
-    status: 'upcoming',
-    entryFee: '10 HBAR',
-    prizes: [
-      { position: 1, amount: '250 HBAR', nft: 'Gold Trophy NFT' },
-      { position: 2, amount: '150 HBAR', nft: 'Silver Trophy NFT' },
-      { position: 3, amount: '100 HBAR', nft: 'Bronze Trophy NFT' },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Tetris Speed Run',
-    game: 'Tetris',
-    description: 'Race to clear 40 lines. Fastest time wins!',
-    prizePool: '300',
-    currency: 'REALM',
-    startDate: '2025-10-29',
-    endDate: '2025-10-31',
-    participants: 45,
-    maxParticipants: 50,
-    status: 'active',
-    entryFee: 'Free',
-    prizes: [
-      { position: 1, amount: '150 REALM' },
-      { position: 2, amount: '100 REALM' },
-      { position: 3, amount: '50 REALM' },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Sudoku Masters',
-    game: 'Sudoku',
-    description: 'Solve expert-level puzzles. Accuracy and speed matter.',
-    prizePool: '200',
-    currency: 'HBAR',
-    startDate: '2025-11-05',
-    endDate: '2025-11-12',
-    participants: 0,
-    maxParticipants: 64,
-    status: 'upcoming',
-    entryFee: '5 HBAR',
-    prizes: [
-      { position: 1, amount: '100 HBAR' },
-      { position: 2, amount: '60 HBAR' },
-      { position: 3, amount: '40 HBAR' },
-    ],
-  },
-];
 
 export default function TournamentsPage() {
   const { userAccountId } = useDAppConnector() ?? {};
-  const [selectedTab, setSelectedTab] = useState('upcoming');
+  const [selectedTab, setSelectedTab] = useState('all');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registering, setRegistering] = useState(false);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const fetchTournaments = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/tournaments');
+      const data = await response.json();
+      setTournaments(data.tournaments || []);
+    } catch (error) {
+      console.error('Error fetching tournaments:', error);
+      toast.error('Failed to load tournaments');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRegister = (tournament: Tournament) => {
     if (!userAccountId) {
@@ -114,23 +75,40 @@ export default function TournamentsPage() {
   };
 
   const confirmRegistration = async () => {
-    if (!selectedTournament) return;
+    if (!selectedTournament || !userAccountId) return;
     
     setRegistering(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success(`Successfully registered for ${selectedTournament.title}!`, {
-        description: `Entry fee: ${selectedTournament.entryFee}`,
+      const response = await fetch(`/api/tournaments/${selectedTournament.id}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userAccountId }),
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Registration failed');
+      }
       
+      toast.success(`Successfully registered for ${selectedTournament.title}!`);
       setShowRegisterModal(false);
       setSelectedTournament(null);
-    } catch {
-      toast.error('Registration failed. Please try again.');
+      fetchTournaments();
+    } catch (error: any) {
+      toast.error(error.message || 'Registration failed. Please try again.');
     } finally {
       setRegistering(false);
     }
+  };
+
+  const getTournamentStatus = (tournament: Tournament) => {
+    const now = new Date();
+    const start = new Date(tournament.startTime);
+    const end = tournament.endTime ? new Date(tournament.endTime) : null;
+
+    if (end && now > end) return 'completed';
+    if (now >= start && (!end || now <= end)) return 'active';
+    return 'upcoming';
   };
 
   const getStatusColor = (status: string) => {
@@ -147,8 +125,8 @@ export default function TournamentsPage() {
   };
 
   const filterTournaments = (status: string) => {
-    if (status === 'all') return mockTournaments;
-    return mockTournaments.filter((t) => t.status === status);
+    if (status === 'all') return tournaments;
+    return tournaments.filter((t) => getTournamentStatus(t) === status);
   };
 
   return (
@@ -169,9 +147,16 @@ export default function TournamentsPage() {
             </span>
           </h1>
           
-          <p className="text-xl text-gray-400 max-w-2xl">
+          <p className="text-xl text-gray-400 max-w-2xl mb-6">
             Join competitive tournaments, win prizes, and climb the ranks
           </p>
+
+          <Link href="/tournaments/create">
+            <Button className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Tournament
+            </Button>
+          </Link>
         </div>
 
         {/* Stats */}
@@ -182,7 +167,7 @@ export default function TournamentsPage() {
                 <div>
                   <p className="text-sm text-gray-400">Active</p>
                   <p className="text-3xl font-bold text-[#98ee2c]">
-                    {mockTournaments.filter((t) => t.status === 'active').length}
+                    {tournaments.filter((t) => getTournamentStatus(t) === 'active').length}
                   </p>
                 </div>
                 <Zap className="w-8 h-8 text-[#98ee2c]" />
@@ -196,7 +181,7 @@ export default function TournamentsPage() {
                 <div>
                   <p className="text-sm text-gray-400">Upcoming</p>
                   <p className="text-3xl font-bold text-white">
-                    {mockTournaments.filter((t) => t.status === 'upcoming').length}
+                    {tournaments.filter((t) => getTournamentStatus(t) === 'upcoming').length}
                   </p>
                 </div>
                 <Calendar className="w-8 h-8 text-[#98ee2c]" />
@@ -209,7 +194,9 @@ export default function TournamentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Prize Pool</p>
-                  <p className="text-3xl font-bold text-white">1000+</p>
+                  <p className="text-3xl font-bold text-white">
+                    {tournaments.reduce((acc, t) => acc + parseInt(t.prizePool || '0'), 0)}
+                  </p>
                 </div>
                 <Coins className="w-8 h-8 text-[#98ee2c]" />
               </div>
@@ -221,7 +208,9 @@ export default function TournamentsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Players</p>
-                  <p className="text-3xl font-bold text-white">69</p>
+                  <p className="text-3xl font-bold text-white">
+                    {tournaments.reduce((acc, t) => acc + t._count.participants, 0)}
+                  </p>
                 </div>
                 <Users className="w-8 h-8 text-[#98ee2c]" />
               </div>
@@ -260,115 +249,101 @@ export default function TournamentsPage() {
 
           {['all', 'active', 'upcoming', 'completed'].map((tab) => (
             <TabsContent key={tab} value={tab}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filterTournaments(tab).map((tournament) => (
-                  <Card key={tournament.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge className={getStatusColor(tournament.status)}>
-                          {tournament.status.toUpperCase()}
-                        </Badge>
-                        <Badge variant="outline" className="border-[#98ee2c]/30 text-[#98ee2c]">
-                          {tournament.game}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-xl text-white">{tournament.title}</CardTitle>
-                      <p className="text-sm text-gray-400">{tournament.description}</p>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      {/* Prize Pool */}
-                      <div className="flex items-center justify-between p-3 bg-[#98ee2c]/10 rounded-lg border border-[#98ee2c]/20">
-                        <div className="flex items-center gap-2">
-                          <Trophy className="w-5 h-5 text-[#98ee2c]" />
-                          <span className="text-sm text-gray-400">Prize Pool</span>
-                        </div>
-                        <span className="font-bold text-[#98ee2c]">
-                          {tournament.prizePool} {tournament.currency}
-                        </span>
-                      </div>
-
-                      {/* Dates */}
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Calendar className="w-4 h-4" />
-                          <span>Start:</span>
-                          <span className="text-white">{new Date(tournament.startDate).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-400">
-                          <Clock className="w-4 h-4" />
-                          <span>End:</span>
-                          <span className="text-white">{new Date(tournament.endDate).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-
-                      {/* Participants */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-400">Participants</span>
-                        </div>
-                        <span className="text-sm font-medium text-white">
-                          {tournament.participants}/{tournament.maxParticipants}
-                        </span>
-                      </div>
-
-                      {/* Entry Fee */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-400">Entry Fee</span>
-                        <Badge variant="secondary" className="bg-white/10 text-white">
-                          {tournament.entryFee}
-                        </Badge>
-                      </div>
-
-                      {/* Prizes */}
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold flex items-center gap-2 text-white">
-                          <Crown className="w-4 h-4 text-[#98ee2c]" />
-                          Prizes
-                        </p>
-                        {tournament.prizes.map((prize) => (
-                          <div
-                            key={prize.position}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <span className="text-gray-400">
-                              {prize.position === 1 ? '🥇' : prize.position === 2 ? '🥈' : '🥉'}{' '}
-                              {prize.position}st Place
-                            </span>
-                            <span className="font-medium text-white">{prize.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-
-                    <CardFooter>
-                      <Button
-                        className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
-                        onClick={() => handleRegister(tournament)}
-                        disabled={
-                          tournament.status === 'completed' ||
-                          tournament.participants >= tournament.maxParticipants
-                        }
-                      >
-                        {tournament.status === 'completed'
-                          ? 'Completed'
-                          : tournament.participants >= tournament.maxParticipants
-                          ? 'Full'
-                          : tournament.status === 'active'
-                          ? 'Join Now'
-                          : 'Register'}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-
-              {filterTournaments(tab).length === 0 && (
+              {loading ? (
                 <div className="text-center py-12">
-                  <Target className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-white">No tournaments found</h3>
-                  <p className="text-gray-400">Check back later for new tournaments</p>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#98ee2c] mx-auto"></div>
+                  <p className="text-gray-400 mt-4">Loading tournaments...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filterTournaments(tab).map((tournament) => {
+                    const status = getTournamentStatus(tournament);
+                    return (
+                      <Card key={tournament.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
+                        <CardHeader>
+                          <div className="flex items-start justify-between mb-2">
+                            <Badge className={getStatusColor(status)}>
+                              {status.toUpperCase()}
+                            </Badge>
+                          </div>
+                          <CardTitle className="text-xl text-white">{tournament.title}</CardTitle>
+                          <p className="text-sm text-gray-400">{tournament.description}</p>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                          {/* Prize Pool */}
+                          {tournament.prizePool && (
+                            <div className="flex items-center justify-between p-3 bg-[#98ee2c]/10 rounded-lg border border-[#98ee2c]/20">
+                              <div className="flex items-center gap-2">
+                                <Trophy className="w-5 h-5 text-[#98ee2c]" />
+                                <span className="text-sm text-gray-400">Prize Pool</span>
+                              </div>
+                              <span className="font-bold text-[#98ee2c]">
+                                {tournament.prizePool} REALM
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Dates */}
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2 text-gray-400">
+                              <Calendar className="w-4 h-4" />
+                              <span>Start:</span>
+                              <span className="text-white">{new Date(tournament.startTime).toLocaleDateString()}</span>
+                            </div>
+                            {tournament.endTime && (
+                              <div className="flex items-center gap-2 text-gray-400">
+                                <Clock className="w-4 h-4" />
+                                <span>End:</span>
+                                <span className="text-white">{new Date(tournament.endTime).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Participants */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-gray-400" />
+                              <span className="text-sm text-gray-400">Participants</span>
+                            </div>
+                            <span className="text-sm font-medium text-white">
+                              {tournament._count.participants}
+                              {tournament.maxParticipants ? `/${tournament.maxParticipants}` : ''}
+                            </span>
+                          </div>
+
+                          {/* Location */}
+                          {tournament.location && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-400">Location</span>
+                              <Badge variant="secondary" className="bg-white/10 text-white">
+                                {tournament.location}
+                              </Badge>
+                            </div>
+                          )}
+                        </CardContent>
+
+                        <CardFooter>
+                          <Button
+                            className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                            onClick={() => handleRegister(tournament)}
+                            disabled={
+                              status === 'completed' ||
+                              (tournament.maxParticipants !== null && tournament._count.participants >= tournament.maxParticipants)
+                            }
+                          >
+                            {status === 'completed'
+                              ? 'Completed'
+                              : tournament.maxParticipants && tournament._count.participants >= tournament.maxParticipants
+                              ? 'Full'
+                              : status === 'active'
+                              ? 'Join Now'
+                              : 'Register'}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
@@ -387,22 +362,20 @@ export default function TournamentsPage() {
             
             {selectedTournament && (
               <div className="space-y-4 py-4">
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <span className="text-gray-400">Entry Fee</span>
-                  <span className="font-bold text-white">{selectedTournament.entryFee}</span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                  <span className="text-gray-400">Prize Pool</span>
-                  <span className="font-bold text-[#98ee2c]">
-                    {selectedTournament.prizePool} {selectedTournament.currency}
-                  </span>
-                </div>
+                {selectedTournament.prizePool && (
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <span className="text-gray-400">Prize Pool</span>
+                    <span className="font-bold text-[#98ee2c]">
+                      {selectedTournament.prizePool} REALM
+                    </span>
+                  </div>
+                )}
                 
                 <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <span className="text-gray-400">Participants</span>
                   <span className="font-bold text-white">
-                    {selectedTournament.participants}/{selectedTournament.maxParticipants}
+                    {selectedTournament._count.participants}
+                    {selectedTournament.maxParticipants ? `/${selectedTournament.maxParticipants}` : ''}
                   </span>
                 </div>
               </div>
@@ -430,3 +403,4 @@ export default function TournamentsPage() {
     </div>
   );
 }
+

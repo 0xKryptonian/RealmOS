@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,68 +15,77 @@ interface Guild {
   id: string;
   name: string;
   slug: string;
-  description: string;
-  imageUrl: string;
+  description: string | null;
+  imageUrl: string | null;
+  bannerUrl: string | null;
   memberCount: number;
   treasuryBalance: string;
   isPublic: boolean;
   founderId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    members: number;
+  };
 }
 
-const mockGuilds: Guild[] = [
-  {
-    id: '1',
-    name: 'Dragon Slayers',
-    slug: 'dragon-slayers',
-    description: 'Elite gaming guild focused on competitive tournaments and community growth',
-    imageUrl: '/images/guild1.png',
-    memberCount: 156,
-    treasuryBalance: '50000',
-    isPublic: true,
-    founderId: '0.0.12345',
-  },
-  {
-    id: '2',
-    name: 'Crypto Knights',
-    slug: 'crypto-knights',
-    description: 'Building the future of Web3 gaming together. Join us for epic battles!',
-    imageUrl: '/images/guild2.png',
-    memberCount: 89,
-    treasuryBalance: '32000',
-    isPublic: true,
-    founderId: '0.0.23456',
-  },
-  {
-    id: '3',
-    name: 'Hedera Heroes',
-    slug: 'hedera-heroes',
-    description: 'Official Hedera gaming community. Play, earn, and grow with us.',
-    imageUrl: '/images/guild3.png',
-    memberCount: 234,
-    treasuryBalance: '125000',
-    isPublic: true,
-    founderId: '0.0.34567',
-  },
-];
 
 export default function GuildsPage() {
   const { userAccountId } = useDAppConnector() ?? {};
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleJoinGuild = (guild: Guild) => {
+  useEffect(() => {
+    fetchGuilds();
+  }, [searchQuery]);
+
+  const fetchGuilds = async () => {
+    try {
+      setLoading(true);
+      const url = searchQuery
+        ? `/api/guilds?search=${encodeURIComponent(searchQuery)}`
+        : '/api/guilds';
+      const response = await fetch(url);
+      const data = await response.json();
+      setGuilds(data.guilds || []);
+    } catch (error) {
+      console.error('Error fetching guilds:', error);
+      toast.error('Failed to load guilds');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoinGuild = async (guild: Guild) => {
     if (!userAccountId) {
       toast.error('Please connect your wallet to join a guild');
       return;
     }
-    toast.success(`Joined ${guild.name}!`, {
-      description: 'Welcome to the guild!',
-    });
+
+    try {
+      const response = await fetch(`/api/guilds/${guild.slug}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userAccountId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to join guild');
+      }
+
+      toast.success(`Joined ${guild.name}!`, {
+        description: 'Welcome to the guild!',
+      });
+      fetchGuilds();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to join guild');
+    }
   };
 
-  const filteredGuilds = mockGuilds.filter((guild) =>
-    guild.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredGuilds = guilds;
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-20">
@@ -127,7 +136,7 @@ export default function GuildsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Total Guilds</p>
-                  <p className="text-3xl font-bold text-white">{mockGuilds.length}</p>
+                  <p className="text-3xl font-bold text-white">{guilds.length}</p>
                 </div>
                 <Shield className="w-8 h-8 text-[#98ee2c]" />
               </div>
@@ -140,7 +149,7 @@ export default function GuildsPage() {
                 <div>
                   <p className="text-sm text-gray-400">Total Members</p>
                   <p className="text-3xl font-bold text-white">
-                    {mockGuilds.reduce((acc, g) => acc + g.memberCount, 0)}
+                    {guilds.reduce((acc, g) => acc + g.memberCount, 0)}
                   </p>
                 </div>
                 <Users className="w-8 h-8 text-[#98ee2c]" />
@@ -154,7 +163,7 @@ export default function GuildsPage() {
                 <div>
                   <p className="text-sm text-gray-400">Total Treasury</p>
                   <p className="text-3xl font-bold text-white">
-                    {(mockGuilds.reduce((acc, g) => acc + parseInt(g.treasuryBalance), 0) / 1000).toFixed(0)}K
+                    {(guilds.reduce((acc, g) => acc + parseInt(g.treasuryBalance), 0) / 1000).toFixed(0)}K
                   </p>
                 </div>
                 <Coins className="w-8 h-8 text-[#98ee2c]" />
@@ -167,7 +176,7 @@ export default function GuildsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Active</p>
-                  <p className="text-3xl font-bold text-[#98ee2c]">{mockGuilds.length}</p>
+                  <p className="text-3xl font-bold text-[#98ee2c]">{guilds.length}</p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-[#98ee2c]" />
               </div>
@@ -199,8 +208,14 @@ export default function GuildsPage() {
           </TabsList>
 
           <TabsContent value={selectedTab}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGuilds.map((guild) => (
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#98ee2c] mx-auto"></div>
+                <p className="text-gray-400 mt-4">Loading guilds...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredGuilds.map((guild) => (
                 <Card
                   key={guild.id}
                   className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all overflow-hidden"
@@ -216,7 +231,7 @@ export default function GuildsPage() {
                       <Crown className="w-8 h-8 text-black" />
                     </div>
                     <CardTitle className="text-xl text-white">{guild.name}</CardTitle>
-                    <p className="text-sm text-gray-400 line-clamp-2">{guild.description}</p>
+                    <p className="text-sm text-gray-400 line-clamp-2">{guild.description || 'No description'}</p>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
@@ -264,9 +279,10 @@ export default function GuildsPage() {
                   </CardFooter>
                 </Card>
               ))}
-            </div>
+              </div>
+            )}
 
-            {filteredGuilds.length === 0 && (
+            {!loading && filteredGuilds.length === 0 && (
               <div className="text-center py-12">
                 <Shield className="w-16 h-16 mx-auto text-gray-600 mb-4" />
                 <h3 className="text-xl font-semibold mb-2 text-white">No guilds found</h3>
