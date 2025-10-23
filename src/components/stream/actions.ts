@@ -1,6 +1,13 @@
 "use server"
 
-import { ClipPayload } from "livepeer/models/components";
+// Define ClipPayload type locally since the livepeer package structure has changed
+export interface ClipPayload {
+    playbackId: string;
+    startTime?: number;
+    endTime?: number;
+    name?: string;
+    sessionId?: string;
+}
 
 interface ClipResponse {
     success: boolean;

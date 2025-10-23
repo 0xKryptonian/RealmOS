@@ -14,13 +14,12 @@ import {
 } from "@livepeer/react/assets";
 import * as Player from "@livepeer/react/player";
 import * as Popover from "@radix-ui/react-popover";
-import { ClipPayload } from "livepeer/models/components";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import React, { useCallback, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Src } from "@livepeer/react";
-import { createClip } from "./actions";
+import { createClip, ClipPayload } from "./actions";
 
 export function PlayerWithControls(props: { src: Src[] | null }) {
     if (!props.src) {

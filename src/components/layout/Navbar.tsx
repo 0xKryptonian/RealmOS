@@ -3,10 +3,28 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Gamepad2, Sparkles, Trophy, Users, ShoppingBag, Wallet, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  Gamepad2,
+  Sparkles,
+  Trophy,
+  Users,
+  ShoppingBag,
+  Wallet,
+  ChevronDown,
+  Video,
+  Swords,
+  BarChart3,
+  MessageSquare,
+  Bot,
+  Store,
+  UsersRound,
+  Puzzle,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDAppConnector } from "@/components/client-providers";
-// import { WalletBalance } from "@/components/wallet-balance";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,12 +34,60 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navigation = [
-  { name: "Games", href: "/games", icon: Gamepad2 },
-  { name: "Tournaments", href: "/tournaments", icon: Trophy },
-  { name: "AI Agents", href: "/agents", icon: Sparkles },
-  { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
-  { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+type NavSubItem = {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+type NavItem = {
+  name: string;
+  icon: LucideIcon;
+  href?: string;
+  items?: NavSubItem[];
+};
+
+// Navigation structure with dropdowns
+const navigation: NavItem[] = [
+  { 
+    name: "Games", 
+    icon: Gamepad2,
+    href: "/games",
+  },
+  {
+    name: "AI Agents",
+    icon: Sparkles,
+    href: "/agents",
+    items: [
+      { name: "Game Master Agent", href: "/agents/chat", icon: Bot },
+      { name: "Marketplace Agent", href: "/agents/chat", icon: Store },
+      { name: "Social Agent", href: "/agents/chat", icon: UsersRound },
+      { name: "MiniGames Agent", href: "/agent-minigame", icon: Puzzle },
+    ],
+  },
+  { 
+    name: "Esports", 
+    icon: Trophy,
+    items: [
+      { name: "Tournaments", href: "/tournaments", icon: Trophy },
+      { name: "Live Streams", href: "/livestream", icon: Video },
+      { name: "Leaderboard", href: "/leaderboard", icon: BarChart3 },
+    ]
+  },
+  { 
+    name: "Social", 
+    icon: Users,
+    items: [
+      { name: "Guilds", href: "/guilds", icon: Users },
+      { name: "Events", href: "/events", icon: Trophy },
+      { name: "Social Hub", href: "/social", icon: MessageSquare },
+    ]
+  },
+  { 
+    name: "Marketplace", 
+    href: "/marketplace", 
+    icon: ShoppingBag 
+  },
 ];
 
 export function Navbar() {
@@ -32,6 +98,19 @@ export function Navbar() {
   const userAccountId = dAppContext?.userAccountId;
   const dAppConnector = dAppContext?.dAppConnector;
   const disconnect = dAppContext?.disconnect;
+
+  const getLinkClasses = (active: boolean) =>
+    `flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+      active
+        ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+        : "text-gray-300 hover:text-white hover:bg-white/5"
+    }`;
+
+  const dropdownContentClasses =
+    "w-56 rounded-lg border border-[#2a2a2a] bg-[#050607]/95 backdrop-blur-xl shadow-lg shadow-black/30";
+
+  const dropdownItemClasses =
+    "w-full cursor-pointer flex items-center space-x-2 px-3 py-2 text-sm text-gray-100 transition-colors data-[highlighted]:bg-[#98ee2c]/15 data-[highlighted]:text-[#98ee2c]";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,20 +159,91 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-2">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
               const Icon = item.icon;
+
+              if (item.items && item.items.length > 0) {
+                const isActive =
+                  (item.href ? pathname === item.href : false) ||
+                  item.items.some((subItem) => pathname === subItem.href);
+
+                if (item.href) {
+                  return (
+                    <div key={item.name} className="flex items-center">
+                      <Link href={item.href} className={getLinkClasses(isActive)}>
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className={`ml-1 px-2 py-2 rounded-lg transition-all ${
+                              isActive
+                                ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+                                : "text-gray-300 hover:text-white hover:bg-white/5"
+                            }`}
+                            aria-label={`${item.name} menu`}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className={dropdownContentClasses}>
+                          <DropdownMenuLabel className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                            {item.name}
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                          {item.items.map((subItem) => {
+                            const SubIcon = subItem.icon;
+                            return (
+                              <DropdownMenuItem key={subItem.href} asChild>
+                                <Link href={subItem.href} className={dropdownItemClasses}>
+                                  <SubIcon className="h-4 w-4" />
+                                  <span>{subItem.name}</span>
+                                </Link>
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  );
+                }
+
+                return (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button className={getLinkClasses(isActive)}>
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className={dropdownContentClasses}>
+                      <DropdownMenuLabel className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                        {item.name}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                      {item.items.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        return (
+                          <DropdownMenuItem key={subItem.href} asChild>
+                            <Link href={subItem.href} className={dropdownItemClasses}>
+                              <SubIcon className="h-4 w-4" />
+                              <span>{subItem.name}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
+              const isActive = pathname === item.href;
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-[#98ee2c]/10 text-[#98ee2c]"
-                      : "text-gray-300 hover:text-white hover:bg-white/5"
-                  }`}
-                >
+                <Link key={item.name} href={item.href ?? "/"} className={getLinkClasses(isActive)}>
                   <Icon className="h-4 w-4" />
                   <span>{item.name}</span>
                 </Link>
@@ -175,12 +325,54 @@ export function Navbar() {
         <div className="md:hidden bg-black/95 backdrop-blur-lg border-t border-gray-800">
           <div className="px-4 pt-2 pb-3 space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
               const Icon = item.icon;
+
+              if (item.items && item.items.length > 0) {
+                return (
+                  <div key={item.name} className="space-y-1">
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className={`${getLinkClasses(pathname === item.href)} flex items-center`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center space-x-2 px-3 py-2 text-gray-400 text-sm font-semibold">
+                        <Icon className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </div>
+                    )}
+                    {item.items.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isActive = pathname === subItem.href;
+                      return (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          className={`flex items-center space-x-2 px-3 py-2 pl-9 rounded-lg text-sm ${
+                            isActive
+                              ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                          }`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <SubIcon className="h-4 w-4" />
+                          <span>{subItem.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
-                  href={item.href}
+                  href={item.href ?? "/"}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium ${
                     isActive
                       ? "bg-[#98ee2c]/10 text-[#98ee2c]"
