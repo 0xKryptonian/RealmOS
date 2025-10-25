@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Wand2, Play, Code, Download } from 'lucide-react';
 import { GameSpec } from '@/types/game-spec';
+import { cn } from '@/lib/utils';
 
 export default function CreateGamePage() {
   const [prompt, setPrompt] = useState('');
@@ -15,6 +16,11 @@ export default function CreateGamePage() {
   const [error, setError] = useState<string>('');
   const [currentStep, setCurrentStep] = useState<'input' | 'spec' | 'code'>('input');
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const handleExamplePromptSelect = (example: string) => {
+    if (isGenerating) return;
+    setPrompt(example.substring(3));
+  };
 
   const generateGameSpec = async () => {
     if (!prompt.trim()) {
@@ -89,6 +95,15 @@ export default function CreateGamePage() {
     iframeDoc.open();
     iframeDoc.write(code);
     iframeDoc.close();
+    
+    // Focus iframe after load to enable keyboard controls
+    iframe.onload = () => {
+      try {
+        iframe.contentWindow?.focus();
+      } catch {
+        console.log('Could not auto-focus iframe');
+      }
+    };
   };
 
   const downloadGame = () => {
@@ -237,6 +252,10 @@ export default function CreateGamePage() {
             <CardContent>
               {gameCode ? (
                 <div className="space-y-4">
+                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md text-sm text-blue-400">
+                    💡 <strong>Tip:</strong> Click inside the game to activate keyboard controls!
+                  </div>
+                  
                   <div className="relative bg-black rounded-lg overflow-hidden border-4 border-gray-800">
                     <iframe
                       ref={iframeRef}
@@ -279,21 +298,32 @@ export default function CreateGamePage() {
               '🚀 Create a space shooter with enemies and power-ups',
               '🏃 Make a platformer where you collect coins and jump over obstacles',
               '🏎️ Build a racing game where you dodge obstacles and collect fuel',
+              '🎲 Create a snake and ladder board game with dice rolling',
               '🧩 Create a match-3 puzzle game with colorful tiles',
               '🎯 Make a breakout game where you break bricks with a ball',
               '🃏 Build a memory card matching game',
               '💰 Create an idle clicker game where you upgrade and earn resources',
               '🏰 Make a tower defense game where you place towers to stop enemies',
             ].map((example, i) => (
-              <Button
+              <div
                 key={i}
-                variant="outline"
-                className="h-auto py-3 px-4 text-left justify-start whitespace-normal"
-                onClick={() => setPrompt(example.substring(3))}
-                disabled={isGenerating}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleExamplePromptSelect(example)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleExamplePromptSelect(example);
+                  }
+                }}
+                className={cn(
+                  buttonVariants({ variant: 'outline' }),
+                  'h-auto py-3 px-4 text-left justify-start whitespace-normal select-text cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                )}
+                aria-disabled={isGenerating}
               >
                 {example}
-              </Button>
+              </div>
             ))}
           </div>
         </CardContent>

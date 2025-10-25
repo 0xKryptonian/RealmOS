@@ -29,10 +29,31 @@ export function generatePlatformerGame(spec: GameSpec): string {
       border: 4px solid #333;
       box-shadow: 0 0 20px rgba(255,100,100,0.3);
     }
+    #game-container:focus {
+      outline: 2px solid #ff6464;
+    }
+    .game-instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 20px 40px;
+      border: 2px solid #ff6464;
+      font-size: 18px;
+      text-align: center;
+      z-index: 1000;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="game-container"></div>
+  <div id="game-container" tabindex="0"></div>
+  <div id="instructions" class="game-instructions">
+    Click here to start!<br>
+    <small>Arrow Keys: Move & Jump</small>
+  </div>
   <script>
     const config = {
       type: Phaser.AUTO,
@@ -55,6 +76,20 @@ export function generatePlatformerGame(spec: GameSpec): string {
     };
 
     const game = new Phaser.Game(config);
+    
+    // Auto-focus game container
+    const container = document.getElementById('game-container');
+    const instructions = document.getElementById('instructions');
+    
+    container.addEventListener('click', () => {
+      container.focus();
+      if (instructions) instructions.style.display = 'none';
+    });
+    
+    setTimeout(() => {
+      container.focus();
+      if (instructions) instructions.style.display = 'none';
+    }, 500);
     
     let player;
     let platforms;

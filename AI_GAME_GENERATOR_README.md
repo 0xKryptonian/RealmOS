@@ -20,8 +20,8 @@ User Prompt → GPT-4 Parser → GameSpec JSON → Template Engine → Phaser.js
 
 ✅ **GameSpec Schema** - Structured JSON format for game definitions  
 ✅ **GPT-4 Intent Parser** - Natural language to GameSpec conversion  
-✅ **8 Phaser.js Templates** - Complete game templates for all major genres  
-✅ **Template Router** - Intelligent genre-based template selection  
+✅ **9 Phaser.js Templates** - Complete game templates for all major genres  
+✅ **Smart Template Router** - Intelligent keyword-based template selection  
 ✅ **Code Generator API** - GameSpec to HTML/JS conversion  
 ✅ **UI with Preview** - Create, preview, and download games  
 ✅ **Simple Visuals** - Pixel art using Phaser's built-in graphics (no DALL-E needed)
@@ -30,12 +30,13 @@ User Prompt → GPT-4 Parser → GameSpec JSON → Template Engine → Phaser.js
 
 1. **🚀 Shooter** - Space invaders with enemies and power-ups
 2. **🏃 Platformer** - Jump and collect with gravity physics
-3. **🧩 Puzzle** - Match-3 tile swapping game
-4. **🏎️ Racing** - Top-down racing with obstacles
-5. **💰 Idle/Clicker** - Resource gathering with upgrades
-6. **🃏 Card** - Memory matching game
-7. **🎯 Arcade** - Breakout brick breaker
-8. **🏰 Strategy** - Tower defense with waves
+3. **🎲 Board Game** - Snake and Ladders with dice rolling
+4. **🧩 Puzzle** - Match-3 tile swapping game
+5. **🏎️ Racing** - Top-down racing with obstacles
+6. **💰 Idle/Clicker** - Resource gathering with upgrades
+7. **🃏 Card** - Memory matching game
+8. **🎯 Arcade** - Breakout brick breaker
+9. **🏰 Strategy** - Tower defense with waves
 
 ## Tech Stack
 
@@ -62,7 +63,8 @@ hedera-verse/
 │   │       ├── idle-template.ts      # Idle/clicker
 │   │       ├── card-template.ts      # Memory card game
 │   │       ├── arcade-template.ts    # Breakout
-│   │       └── strategy-template.ts  # Tower defense
+│   │       ├── strategy-template.ts  # Tower defense
+│   │       └── board-game-template.ts # Snake & Ladders
 │   ├── app/
 │   │   ├── create-game/
 │   │   │   └── page.tsx              # UI for game creation
@@ -195,7 +197,7 @@ Navigate to: `http://localhost:3000/create-game`
 
 ## Game Templates
 
-All 8 templates are fully implemented and production-ready. See `TEMPLATES_SUMMARY.md` for detailed documentation.
+All 9 templates are fully implemented and production-ready. See `TEMPLATES_SUMMARY.md` for detailed documentation.
 
 ### Quick Overview
 
@@ -203,6 +205,7 @@ All 8 templates are fully implemented and production-ready. See `TEMPLATES_SUMMA
 |----------|----------|--------------|
 | 🚀 Shooter | Arrows + Space | Enemies, bullets, power-ups |
 | 🏃 Platformer | Arrows | Jumping, platforms, collectibles |
+| 🎲 Board Game | Mouse | Dice rolling, snakes, ladders |
 | 🧩 Puzzle | Mouse | Match-3, tile swapping |
 | 🏎️ Racing | Arrows | Lanes, obstacles, speed control |
 | 💰 Idle | Mouse | Clicking, upgrades, automation |
