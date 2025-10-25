@@ -271,20 +271,25 @@ export default function CreateGamePage() {
       {/* Example Prompts */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Example Prompts</CardTitle>
+          <CardTitle>Example Prompts - Try Different Game Types!</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-3">
             {[
-              'Create a space shooter with enemies and power-ups',
-              'Make a platformer where you collect coins and avoid obstacles',
-              'Build a simple racing game with obstacles on the track',
+              '🚀 Create a space shooter with enemies and power-ups',
+              '🏃 Make a platformer where you collect coins and jump over obstacles',
+              '🏎️ Build a racing game where you dodge obstacles and collect fuel',
+              '🧩 Create a match-3 puzzle game with colorful tiles',
+              '🎯 Make a breakout game where you break bricks with a ball',
+              '🃏 Build a memory card matching game',
+              '💰 Create an idle clicker game where you upgrade and earn resources',
+              '🏰 Make a tower defense game where you place towers to stop enemies',
             ].map((example, i) => (
               <Button
                 key={i}
                 variant="outline"
                 className="h-auto py-3 px-4 text-left justify-start whitespace-normal"
-                onClick={() => setPrompt(example)}
+                onClick={() => setPrompt(example.substring(3))}
                 disabled={isGenerating}
               >
                 {example}

@@ -20,11 +20,22 @@ User Prompt → GPT-4 Parser → GameSpec JSON → Template Engine → Phaser.js
 
 ✅ **GameSpec Schema** - Structured JSON format for game definitions  
 ✅ **GPT-4 Intent Parser** - Natural language to GameSpec conversion  
-✅ **Phaser.js Templates** - Shooter and Platformer game templates  
-✅ **Template Router** - Genre-based template selection  
+✅ **8 Phaser.js Templates** - Complete game templates for all major genres  
+✅ **Template Router** - Intelligent genre-based template selection  
 ✅ **Code Generator API** - GameSpec to HTML/JS conversion  
 ✅ **UI with Preview** - Create, preview, and download games  
 ✅ **Simple Visuals** - Pixel art using Phaser's built-in graphics (no DALL-E needed)
+
+### Available Game Templates
+
+1. **🚀 Shooter** - Space invaders with enemies and power-ups
+2. **🏃 Platformer** - Jump and collect with gravity physics
+3. **🧩 Puzzle** - Match-3 tile swapping game
+4. **🏎️ Racing** - Top-down racing with obstacles
+5. **💰 Idle/Clicker** - Resource gathering with upgrades
+6. **🃏 Card** - Memory matching game
+7. **🎯 Arcade** - Breakout brick breaker
+8. **🏰 Strategy** - Tower defense with waves
 
 ## Tech Stack
 
@@ -44,8 +55,14 @@ hedera-verse/
 │   ├── lib/
 │   │   └── game-templates/
 │   │       ├── index.ts              # Template router
-│   │       ├── shooter-template.ts   # Space shooter template
-│   │       └── platformer-template.ts # Platformer template
+│   │       ├── shooter-template.ts   # Space shooter
+│   │       ├── platformer-template.ts # Platformer
+│   │       ├── puzzle-template.ts    # Match-3 puzzle
+│   │       ├── racing-template.ts    # Top-down racing
+│   │       ├── idle-template.ts      # Idle/clicker
+│   │       ├── card-template.ts      # Memory card game
+│   │       ├── arcade-template.ts    # Breakout
+│   │       └── strategy-template.ts  # Tower defense
 │   ├── app/
 │   │   ├── create-game/
 │   │   │   └── page.tsx              # UI for game creation
@@ -55,7 +72,8 @@ hedera-verse/
 │   │       └── ai-game-html/
 │   │           └── route.ts          # Code generation
 │   └── components/ui/                # shadcn/ui components
-└── AI_GAME_GENERATOR_README.md       # This file
+├── AI_GAME_GENERATOR_README.md       # This file
+└── TEMPLATES_SUMMARY.md              # Detailed template docs
 ```
 
 ## Setup Instructions
@@ -97,13 +115,37 @@ Navigate to: `http://localhost:3000/create-game`
 
 2. **Platformer**
    ```
-   Make a platformer where you collect coins and avoid obstacles
+   Make a platformer where you collect coins and jump over obstacles
    ```
 
-3. **Custom Game**
+3. **Puzzle**
    ```
-   Build a game where the player is a spaceship dodging asteroids 
-   and collecting fuel to survive as long as possible
+   Create a match-3 puzzle game with colorful tiles
+   ```
+
+4. **Racing**
+   ```
+   Build a racing game where you dodge obstacles and collect fuel
+   ```
+
+5. **Idle/Clicker**
+   ```
+   Create an idle clicker game where you upgrade and earn resources
+   ```
+
+6. **Card Game**
+   ```
+   Build a memory card matching game
+   ```
+
+7. **Arcade**
+   ```
+   Make a breakout game where you break bricks with a ball
+   ```
+
+8. **Strategy**
+   ```
+   Make a tower defense game where you place towers to stop enemies
    ```
 
 ### API Endpoints
@@ -153,33 +195,20 @@ Navigate to: `http://localhost:3000/create-game`
 
 ## Game Templates
 
-### Shooter Template
+All 8 templates are fully implemented and production-ready. See `TEMPLATES_SUMMARY.md` for detailed documentation.
 
-**Features:**
-- Player spaceship with keyboard controls
-- Enemies spawning from top
-- Bullet shooting with spacebar
-- Collectible power-ups
-- Score tracking
-- Game over screen
+### Quick Overview
 
-**Controls:**
-- Arrow keys: Move
-- Space: Shoot
-
-### Platformer Template
-
-**Features:**
-- Player character with gravity
-- Multiple platforms
-- Collectible items
-- Score tracking
-- Win condition
-- Respawning collectibles
-
-**Controls:**
-- Left/Right arrows: Move
-- Up arrow: Jump
+| Template | Controls | Key Features |
+|----------|----------|--------------|
+| 🚀 Shooter | Arrows + Space | Enemies, bullets, power-ups |
+| 🏃 Platformer | Arrows | Jumping, platforms, collectibles |
+| 🧩 Puzzle | Mouse | Match-3, tile swapping |
+| 🏎️ Racing | Arrows | Lanes, obstacles, speed control |
+| 💰 Idle | Mouse | Clicking, upgrades, automation |
+| 🃏 Card | Mouse | Memory matching, pairs |
+| 🎯 Arcade | Arrows + Space | Paddle, ball, bricks |
+| 🏰 Strategy | Mouse | Tower placement, waves |
 
 ## Extending the System
 
@@ -236,19 +265,18 @@ export interface GameSpec {
 
 ### Current Limitations
 
-- Only 2 templates (shooter, platformer)
+- Some templates are keyboard-only (not mobile-friendly yet)
 - No asset customization (uses Phaser's built-in shapes)
 - No multiplayer support
 - No blockchain integration yet
-- Desktop-only controls
+- No sound effects or music
 
 ### Planned Enhancements
 
-1. **More Templates**
-   - Puzzle games (match-3, block stacking)
-   - Racing games
-   - Card games
-   - Idle/clicker games
+1. **Mobile Support**
+   - Touch controls for all templates
+   - Responsive layouts
+   - Virtual joystick/buttons
 
 2. **Visual Improvements**
    - React Icons integration for sprites
