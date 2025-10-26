@@ -6,6 +6,7 @@
       "dependencies": {
         "@hashgraph/hedera-wallet-connect": "2.0.0-canary.811af2f.0",
         "@hashgraph/sdk": "^2.67.0",
+        "@iconify-json/game-icons": "^1.2.3",
         "@langchain/core": "^0.3.66",
         "@langchain/openai": "^0.6.2",
         "@livepeer/react": "^4.3.6",
@@ -259,6 +260,10 @@
     "@humanwhocodes/module-importer": ["@humanwhocodes/module-importer@1.0.1", "", {}, "sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA=="],
 
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
+
+    "@iconify-json/game-icons": ["@iconify-json/game-icons@1.2.3", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-JnrHQjNI/2nJxlnEAPlU4ta6S44XTX7RJnBUyBV27GbVhJhfwpY9kqzkTqmPs4nyAJaGUjZwOcnBUQ9Dc21nlA=="],
+
+    "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 
     "@img/sharp-darwin-arm64": ["@img/sharp-darwin-arm64@0.34.2", "", { "optionalDependencies": { "@img/sharp-libvips-darwin-arm64": "1.1.0" }, "os": "darwin", "cpu": "arm64" }, "sha512-OfXHZPppddivUJnqyKoi5YVeHRkkNE2zUFT2gbpKxp/JZCFYEYubnMg+gOp6lWfasPrTS+KPosKqdI+ELYVDtg=="],
 
