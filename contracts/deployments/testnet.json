@@ -1,0 +1,9 @@
+{
+  "network": "testnet",
+  "timestamp": "2025-10-31T18:32:09.744Z",
+  "contracts": {
+    "NFTMarketplace": "0.0.7171576",
+    "PrizeEscrow": "0.0.7171580",
+    "GuildTreasury": "0.0.7171583"
+  }
+}

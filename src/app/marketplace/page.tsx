@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Search, Filter, TrendingUp, Clock, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDAppConnector } from '../../components/client-providers';
+import { MyNFTsTab } from '../../components/marketplace/MyNFTsTab';
 
 interface NFTListing {
   id: string;
@@ -182,6 +183,7 @@ export default function MarketplacePage() {
       <Tabs defaultValue="all" className="mb-8">
         <TabsList>
           <TabsTrigger value="all">All Items</TabsTrigger>
+          <TabsTrigger value="my-nfts">My NFTs</TabsTrigger>
           <TabsTrigger value="trending">Trending</TabsTrigger>
           <TabsTrigger value="new">New</TabsTrigger>
         </TabsList>
@@ -269,6 +271,10 @@ export default function MarketplacePage() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="my-nfts" className="mt-6">
+          <MyNFTsTab userAccountId={userAccountId || undefined} />
         </TabsContent>
 
         <TabsContent value="trending">
