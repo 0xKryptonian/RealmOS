@@ -51,7 +51,8 @@ export class HederaFileService {
       const fileCreateTx = new FileCreateTransaction()
         .setKeys(keys)
         .setContents(firstChunk)
-        .setMaxTransactionFee(new Hbar(2));
+        .setMaxTransactionFee(new Hbar(5))
+        .setTransactionValidDuration(180); // 3 minutes
 
       if (options.description) {
         fileCreateTx.setFileMemo(options.description.substring(0, 100));
@@ -77,9 +78,11 @@ export class HederaFileService {
           const fileAppendTx = new FileAppendTransaction()
             .setFileId(fileId)
             .setContents(chunk)
-            .setMaxTransactionFee(new Hbar(2));
+            .setMaxTransactionFee(new Hbar(5))
+            .setTransactionValidDuration(180); // 3 minutes
 
-          await fileAppendTx.execute(client);
+          const appendResponse = await fileAppendTx.execute(client);
+          await appendResponse.getReceipt(client); // Wait for confirmation
           
           offset += maxChunkSize;
           console.log(`📎 Appended chunk: ${offset}/${fileSize} bytes`);

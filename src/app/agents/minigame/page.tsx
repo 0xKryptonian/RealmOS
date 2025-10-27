@@ -1,14 +1,19 @@
+
 'use client';
 
 import { useState, useRef } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wand2, Play, Code, Download } from 'lucide-react';
+import { Loader2, Wand2, Play, Code, Download, Database, Coins, Trophy } from 'lucide-react';
 import { GameSpec } from '@/types/game-spec';
 import { GameDesign } from '@/types/game-design';
 import { cn } from '@/lib/utils';
 import { GameRefinementConsole, GenerationLog } from '@/components/game-refinement-console';
+import { useDAppConnector } from '@/components/client-providers';
+import { TokenAssociateTransaction, AccountId, TokenId } from '@hashgraph/sdk';
+import { GAME_NFT } from '@/lib/constants';
 
 export default function CreateGamePage() {
   const [prompt, setPrompt] = useState('');
@@ -24,6 +29,19 @@ export default function CreateGamePage() {
   const [refinementSuggestions, setRefinementSuggestions] = useState<string[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // Wallet connector (same pattern as GamePaymentModal)
+  const dAppContext = useDAppConnector();
+  const dAppConnector = dAppContext?.dAppConnector;
+  const userAccountId = dAppContext?.userAccountId;
+  const isWalletConnected = !!userAccountId;
+  
+  // Hedera integration state
+  const [isStoringOnHedera, setIsStoringOnHedera] = useState(false);
+  const [isMintingNFT, setIsMintingNFT] = useState(false);
+  const [hederaFileId, setHederaFileId] = useState<string | null>(null);
+  const [nftTokenId, setNftTokenId] = useState<string | null>(null);
+  const [hfsMetadataId, setHfsMetadataId] = useState<string | null>(null);
+  const [hederaStatus, setHederaStatus] = useState<string>('');
 
   // Global addLog helper
   const addLog = (step: string, message: string, type?: 'info' | 'success' | 'error' | 'warning', details?: string) => {
@@ -281,6 +299,145 @@ export default function CreateGamePage() {
     setGenerationLogs([]);
     setGameDesign(null);
     setShowConsole(false);
+    setHederaFileId(null);
+    setNftTokenId(null);
+    setHederaStatus('');
+  };
+
+  // Store game on Hedera File Service
+  const storeOnHedera = async () => {
+    if (!gameCode || !gameSpec) return;
+
+    setIsStoringOnHedera(true);
+    setHederaStatus('Storing game on Hedera...');
+    addLog('hedera', '📦 Storing game on Hedera File Service...', 'info', 'Uploading to HFS');
+
+    try {
+      const response = await fetch('/api/hedera/hfs/store-game', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameHtml: gameCode,
+          gameName: gameSpec.title,
+          gameSlug: gameSpec.title.toLowerCase().replace(/\s+/g, '-'),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setHederaFileId(data.data.hfsFileId);
+        setHfsMetadataId(data.data.hfsMetadataId || null);
+        setHederaStatus(`Stored on HFS: ${data.data.hfsFileId}`);
+        addLog('hedera', '✅ Game stored on Hedera successfully!', 'success', 
+          `File ID: ${data.data.hfsFileId} | Size: ${(data.data.fileSize / 1024).toFixed(2)} KB`);
+        addLog('hedera', '🔗 Game URL generated', 'info', data.data.fileUrl);
+      } else {
+        throw new Error(data.error || 'Failed to store on Hedera');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to store on Hedera';
+      setHederaStatus(`Error: ${errorMessage}`);
+      addLog('hedera', '❌ Failed to store on Hedera', 'error', errorMessage);
+    } finally {
+      setIsStoringOnHedera(false);
+    }
+  };
+
+  // Mint game as NFT
+  const mintAsNFT = async () => {
+    if (!gameSpec || !hederaFileId) return;
+    // Require wallet connection for user-owned mint
+    if (!isWalletConnected || !dAppConnector || !userAccountId) {
+      dAppConnector?.openModal?.();
+      return;
+    }
+
+    // Ensure user has associated GAME_NFT
+    try {
+      const signer = dAppConnector.signers?.[0];
+      if (signer) {
+        const assocTx = await new TokenAssociateTransaction()
+          .setAccountId(AccountId.fromString(userAccountId))
+          .setTokenIds([TokenId.fromString(GAME_NFT)])
+          .freezeWithSigner(signer);
+        const txBytes = Buffer.from(assocTx.toBytes()).toString('base64');
+        await dAppConnector.signAndExecuteTransaction({
+          signerAccountId: userAccountId,
+          transactionList: txBytes,
+        });
+        addLog('hedera', '🔗 Associated GAME_NFT to your wallet', 'success');
+      }
+    } catch (e: any) {
+      // If already associated or user rejected, proceed only if already associated
+      const msg = typeof e?.message === 'string' ? e.message : '';
+      if (msg && msg.toLowerCase().includes('token already associated')) {
+        addLog('hedera', 'ℹ️ Token already associated', 'info');
+      } else {
+        addLog('hedera', '⚠️ Association skipped', 'warning', msg || '');
+      }
+    }
+
+    setIsMintingNFT(true);
+    setHederaStatus('Minting game NFT...');
+    addLog('hedera', '🎨 Minting game as NFT...', 'info', 'Creating on-chain asset');
+
+    try {
+      const response = await fetch('/api/hedera/nft/mint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'GAME_ASSET',
+          tokenId: GAME_NFT,
+          // Use compact metadata pointer to avoid METADATA_TOO_LONG
+          metadataPointer: hfsMetadataId ? `hfs:${hfsMetadataId}` : `hfs:${hederaFileId}`,
+          // Optional lightweight params for DB only
+          params: {
+            accountId: userAccountId,
+            rarity: 'COMMON',
+            attributes: { hfsFileId: hederaFileId, hfsMetadataId },
+          },
+          recipientAccountId: userAccountId,
+          // Do not pass userId unless you have a valid user in DB to avoid FK violations
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setNftTokenId(`${data.data.tokenId}:${data.data.serialNumber}`);
+        setHederaStatus(`🎉 NFT(${data.data.tokenId}:${data.data.serialNumber}) minted to user ${userAccountId} successfully!`);
+        if (data.warning) {
+          addLog('hedera', '⚠️ NFT DB warning', 'warning', data.warning);
+        }
+        if (data.data.transferTxId) {
+          addLog('hedera', '📤 NFT transferred to your wallet!', 'success', `Tx: ${data.data.transferTxId}`);
+          addLog('hedera', '🎉 You now own this game NFT!', 'success', 
+            `Token: ${data.data.tokenId} | Serial: ${data.data.serialNumber}`);
+          // User toast (simple message): NFT minted to user wallet
+          toast.success('NFT minted to your wallet', {
+            description: `${data.data.tokenId}:${data.data.serialNumber} → ${userAccountId}`,
+          });
+        } else if (data.data.transferError) {
+          addLog('hedera', '⚠️ NFT minted but not transferred', 'warning', data.data.transferError);
+          addLog('hedera', '📦 NFT remains in treasury', 'info', 
+            `To receive it: Contact admin or use marketplace to claim ${data.data.tokenId}:${data.data.serialNumber}`);
+        } else {
+          addLog('hedera', '📦 NFT minted (no auto-transfer configured)', 'info');
+        }
+        addLog('hedera', '🎉 Game NFT minted successfully!', 'success', 
+          `Token: ${data.data.tokenId} | Serial: ${data.data.serialNumber}`);
+        addLog('hedera', '💎 NFT is now tradeable on marketplace', 'info', 'Users can buy/sell this game');
+      } else {
+        throw new Error(data.error || 'Failed to mint NFT');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mint NFT';
+      setHederaStatus(`Error: ${errorMessage}`);
+      addLog('hedera', '❌ Failed to mint NFT', 'error', errorMessage);
+    } finally {
+      setIsMintingNFT(false);
+    }
   };
 
   const handleRefine = async (refinementPrompt: string) => {
@@ -389,13 +546,41 @@ export default function CreateGamePage() {
           <div className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full border border-purple-500/20">
             <Wand2 className="w-6 h-6 text-purple-400" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 bg-clip-text text-transparent">
-              AI Game Generator
-            </h1>
+              MiniGame Agent            
+</h1>
           </div>
         </div>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Create playable mini-games using natural language - powered by GPT-4 and Phaser.js
         </p>
+        <div className="mt-4 p-4 bg-gradient-to-r from-[#98ee2c]/10 to-purple-500/10 border border-[#98ee2c]/30 rounded-lg max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-semibold text-[#98ee2c]">🚀 Now with Hedera Integration!</span>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-300">
+            <div className="flex items-start gap-2">
+              <Database className="w-4 h-4 text-[#98ee2c] mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="font-medium">Store on HFS</div>
+                <div className="text-xs text-gray-400">Permanent decentralized storage</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Coins className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="font-medium">Mint as NFT</div>
+                <div className="text-xs text-gray-400">Tradeable game assets</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Trophy className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="font-medium">HCS Events</div>
+                <div className="text-xs text-gray-400">Immutable game records</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
        {/* Example Prompts */}
@@ -640,14 +825,67 @@ export default function CreateGamePage() {
                     <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-800/50 to-transparent pointer-events-none" />
                   </div>
                   
-                  <Button
-                    onClick={downloadGame}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Game HTML
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={downloadGame}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Game HTML
+                    </Button>
+
+                    {/* Hedera Integration Buttons */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={storeOnHedera}
+                        disabled={isStoringOnHedera || !gameCode}
+                        variant="outline"
+                        className="bg-[#98ee2c]/10 border-[#98ee2c]/30 text-[#98ee2c] hover:bg-[#98ee2c]/20"
+                      >
+                        {isStoringOnHedera ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Database className="w-4 h-4 mr-2" />
+                        )}
+                        Store on HFS
+                      </Button>
+
+                      <Button
+                        onClick={() => (isWalletConnected ? mintAsNFT() : dAppConnector?.openModal())}
+                        disabled={isMintingNFT || !hederaFileId}
+                        variant="outline"
+                        className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                      >
+                        {isMintingNFT ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Coins className="w-4 h-4 mr-2" />
+                        )}
+                        {isWalletConnected ? 'Mint NFT' : 'Connect Wallet'}
+                      </Button>
+                    </div>
+
+                    {/* Hedera Status Display */}
+                    {hederaStatus && (
+                      <div className="p-3 bg-[#98ee2c]/10 border border-[#98ee2c]/30 rounded-lg text-sm">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="w-4 h-4 text-[#98ee2c]" />
+                          <span className="font-medium text-[#98ee2c]">Hedera Status:</span>
+                        </div>
+                        <p className="text-gray-300 mt-1">{hederaStatus}</p>
+                        
+                        {hederaFileId && (
+                          <div className="mt-2 text-xs text-gray-400">
+                            <div>HFS File ID: <code className="bg-gray-800 px-1 rounded">{hederaFileId}</code></div>
+                            {nftTokenId && (
+                              <div className="mt-1">NFT Token: <code className="bg-gray-800 px-1 rounded">{nftTokenId}</code></div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-[600px] bg-gradient-to-br from-purple-500/5 to-blue-500/5 rounded-xl border-2 border-dashed border-purple-500/20">

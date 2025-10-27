@@ -24,8 +24,9 @@ export class HederaClient {
       return this.instance;
     }
 
-    const accountId = process.env.HEDERA_ACCOUNT_ID;
-    const privateKey = process.env.HEDERA_PRIVATE_KEY;
+    // Prefer new OPERATOR envs, fallback to legacy
+    const accountId = process.env.HEDERA_OPERATOR_ID || process.env.HEDERA_ACCOUNT_ID;
+    const privateKey = process.env.HEDERA_OPERATOR_KEY || process.env.HEDERA_PRIVATE_KEY;
     const network = process.env.HEDERA_NETWORK || 'testnet';
 
     if (!accountId || !privateKey) {
@@ -47,9 +48,17 @@ export class HederaClient {
     // Set operator
     this.instance.setOperator(this.operatorId, this.operatorKey);
 
+    // Debug logs (non-sensitive)
+    const maskedKey = `${this.operatorKey.publicKey.toString().slice(0, 10)}...`;
+    console.info('[HederaClient] Initialized', {
+      network,
+      operatorId: this.operatorId.toString(),
+      operatorPubKey: maskedKey,
+    });
+
     // Set default transaction fee and query payment
-    this.instance.setDefaultMaxTransactionFee(new Hbar(2));
-    this.instance.setDefaultMaxQueryPayment(new Hbar(1));
+    this.instance.setDefaultMaxTransactionFee(new Hbar(5));
+    this.instance.setDefaultMaxQueryPayment(new Hbar(2));
 
     return this.instance;
   }
