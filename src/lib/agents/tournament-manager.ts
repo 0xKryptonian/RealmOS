@@ -1,5 +1,5 @@
 import { BaseAgent, AgentConfig, AgentResponse } from './base-agent';
-import { HederaTokenService } from '../hedera/token';
+import { HederaTokenService } from '@/lib/hedera/token';
 import { TokenId, AccountId } from '@hashgraph/sdk';
 
 export interface TournamentConfig {

@@ -55,7 +55,7 @@ export function generatePlatformerGame(spec: GameSpec): string {
     <small>Arrow Keys: Move & Jump</small>
   </div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -75,7 +75,7 @@ export function generatePlatformerGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#87CEEB'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     // Auto-focus game container
     const container = document.getElementById('game-container');

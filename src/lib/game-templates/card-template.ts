@@ -34,7 +34,7 @@ export function generateCardGame(spec: GameSpec): string {
 <body>
   <div id="game-container"></div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -47,7 +47,7 @@ export function generateCardGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#0f2027'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     const CARD_WIDTH = 80;
     const CARD_HEIGHT = 110;

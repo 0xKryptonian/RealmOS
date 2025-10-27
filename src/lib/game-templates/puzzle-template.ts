@@ -34,7 +34,7 @@ export function generatePuzzleGame(spec: GameSpec): string {
 <body>
   <div id="game-container"></div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -47,7 +47,7 @@ export function generatePuzzleGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#1a0033'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     const GRID_SIZE = 8;
     const TILE_SIZE = 60;
@@ -63,14 +63,7 @@ export function generatePuzzleGame(spec: GameSpec): string {
     let isSwapping = false;
 
     function preload() {
-      // Create colored tile sprites
-      COLORS.forEach((color, i) => {
-        this.textures.generate(\`tile\${i}\`, { 
-          data: ['1'], 
-          pixelWidth: TILE_SIZE - 4, 
-          pixelHeight: TILE_SIZE - 4 
-        });
-      });
+      // No preload needed - we'll use graphics
     }
 
     function create() {
@@ -85,12 +78,14 @@ export function generatePuzzleGame(spec: GameSpec): string {
           const y = startY + row * TILE_SIZE + TILE_SIZE / 2;
           const colorIndex = Phaser.Math.Between(0, COLORS.length - 1);
           
-          const tile = this.add.sprite(x, y, \`tile\${colorIndex}\`);
+          // Create tile using graphics
+          const tile = this.add.rectangle(x, y, TILE_SIZE - 4, TILE_SIZE - 4, COLORS[colorIndex]);
+          tile.setStrokeStyle(2, 0xffffff, 0.5);
           tile.setInteractive();
-          tile.setTint(COLORS[colorIndex]);
           tile.setData('row', row);
           tile.setData('col', col);
           tile.setData('colorIndex', colorIndex);
+          tile.setData('originalColor', COLORS[colorIndex]);
           
           tile.on('pointerdown', () => selectTile(tile));
           
@@ -291,8 +286,8 @@ export function generatePuzzleGame(spec: GameSpec): string {
           const colorIndex = Phaser.Math.Between(0, COLORS.length - 1);
           
           tile.setData('colorIndex', colorIndex);
-          tile.setTexture(\`tile\${colorIndex}\`);
-          tile.setTint(COLORS[colorIndex]);
+          tile.setData('originalColor', COLORS[colorIndex]);
+          tile.setFillStyle(COLORS[colorIndex]);
           tile.setAlpha(1);
           tile.setScale(1);
         });

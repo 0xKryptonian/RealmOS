@@ -77,7 +77,7 @@ export function generateDynamicGame(design: GameDesign): string {
     <small>${gameDesign.player?.controls.join(' | ') || 'Arrow Keys to Move'}</small>
   </div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -97,7 +97,7 @@ export function generateDynamicGame(design: GameDesign): string {
       backgroundColor: '${getSceneBackground(visuals.colorScheme)}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     // Auto-focus
     const container = document.getElementById('game-container');

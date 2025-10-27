@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Coins, RefreshCw } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useDAppConnector } from './client-providers';
+import { useDAppConnector } from '@/components/client-providers';
 
 interface WalletBalanceProps {
   className?: string;
@@ -17,7 +17,7 @@ export function WalletBalance({ className, showRefresh = true }: WalletBalancePr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (!userAccountId) {
       setBalance(0);
       return;
@@ -42,11 +42,11 @@ export function WalletBalance({ className, showRefresh = true }: WalletBalancePr
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAccountId]);
 
   useEffect(() => {
     fetchBalance();
-  }, [userAccountId]);
+  }, [fetchBalance]);
 
   if (!userAccountId) {
     return null;

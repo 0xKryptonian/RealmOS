@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Terminal, Sparkles, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Loader2, Terminal, Sparkles, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, AlertCircle, Zap, Code, Cpu } from 'lucide-react';
+import { Badge } from './ui/badge';
 
-interface GenerationLog {
+export interface GenerationLog {
   step: string;
   message: string;
   timestamp: number;
+  type?: 'info' | 'success' | 'error' | 'warning';
+  details?: string;
 }
 
 interface GameRefinementConsoleProps {
@@ -19,6 +22,10 @@ interface GameRefinementConsoleProps {
   gameDesign: any;
   showConsole: boolean;
   onToggleConsole: () => void;
+  isGenerating?: boolean;
+  error?: string;
+  refinementSuggestions?: string[];
+  isPreview?: boolean;
 }
 
 export function GameRefinementConsole({
@@ -27,7 +34,11 @@ export function GameRefinementConsole({
   isRefining,
   gameDesign,
   showConsole,
-  onToggleConsole
+  onToggleConsole,
+  isGenerating = false,
+  error = '',
+  refinementSuggestions = [],
+  isPreview = false
 }: GameRefinementConsoleProps) {
   const [refinementPrompt, setRefinementPrompt] = useState('');
 
@@ -37,10 +48,13 @@ export function GameRefinementConsole({
     setRefinementPrompt('');
   };
 
-  const quickFixes = [
-    'Make enemies move faster',
-    'Add more power-ups',
-    'Increase player health',
+  // Use AI-suggested refinements for preview mode, or default quick fixes
+  const quickFixes = isPreview && refinementSuggestions.length > 0
+    ? refinementSuggestions
+    : [
+        'Make enemies move faster',
+        'Add more power-ups',
+        'Increase player health',
     'Make game easier',
     'Add boss fight',
     'Change color scheme to neon'
@@ -57,6 +71,13 @@ export function GameRefinementConsole({
     });
   };
 
+  const getElapsedTime = () => {
+    if (logs.length === 0) return '0.00s';
+    const first = logs[0].timestamp;
+    const last = logs[logs.length - 1].timestamp;
+    return ((last - first) / 1000).toFixed(2) + 's';
+  };
+
   const getStepIcon = (step: string) => {
     const icons: Record<string, string> = {
       init: '🚀',
@@ -66,47 +87,137 @@ export function GameRefinementConsole({
       generate: '⚙️',
       complete: '🎉',
       error: '❌',
-      refine: '✨'
+      refine: '✨',
+      loading: '⏳',
+      api: '🌐',
+      code: '💻'
     };
     return icons[step] || '📝';
   };
 
+  const getLogTypeColor = (type?: string) => {
+    switch (type) {
+      case 'success': return 'text-green-400';
+      case 'error': return 'text-red-400';
+      case 'warning': return 'text-yellow-400';
+      default: return 'text-blue-400';
+    }
+  };
+
+  const getLogTypeIcon = (type?: string) => {
+    switch (type) {
+      case 'success': return <CheckCircle2 className="w-3 h-3" />;
+      case 'error': return <XCircle className="w-3 h-3" />;
+      case 'warning': return <AlertCircle className="w-3 h-3" />;
+      default: return <Zap className="w-3 h-3" />;
+    }
+  };
+
+  const getStatusBadge = () => {
+    if (isGenerating || isRefining) {
+      return <Badge variant="default" className="animate-pulse"><Loader2 className="w-3 h-3 mr-1 animate-spin" />Processing</Badge>;
+    }
+    if (error) {
+      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Error</Badge>;
+    }
+    if (logs.length > 0 && logs[logs.length - 1].step === 'complete') {
+      return <Badge variant="default" className="bg-green-600"><CheckCircle2 className="w-3 h-3 mr-1" />Complete</Badge>;
+    }
+    return <Badge variant="outline">Ready</Badge>;
+  };
+
   return (
-    <Card className="mt-6">
-      <CardHeader className="cursor-pointer" onClick={onToggleConsole}>
+    <Card className="mt-6 border-2">
+      <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={onToggleConsole}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-5 h-5" />
-            <CardTitle>Generation Console & Refinement</CardTitle>
+          <div className="flex items-center gap-3">
+            <Terminal className="w-5 h-5 text-purple-500" />
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                Generation Console & Refinement
+                {getStatusBadge()}
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {logs.length > 0 && `${logs.length} events • ${getElapsedTime()} elapsed`}
+                {logs.length === 0 && 'View generation process and refine your game with AI'}
+              </CardDescription>
+            </div>
           </div>
           <Button variant="ghost" size="sm">
             {showConsole ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
-        <CardDescription>
-          View generation process and refine your game with AI
-        </CardDescription>
       </CardHeader>
 
       {showConsole && (
-        <CardContent className="space-y-4">
-          {/* Generation Logs */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Clock className="w-4 h-4" />
-              Generation Timeline
-            </div>
-            <div className="bg-black/90 rounded-lg p-4 font-mono text-sm max-h-[300px] overflow-y-auto">
-              {logs.length === 0 ? (
-                <div className="text-gray-500">No logs yet. Generate a game to see the process.</div>
-              ) : (
-                logs.map((log, i) => (
-                  <div key={i} className="mb-2 flex items-start gap-2">
-                    <span className="text-gray-500">[{formatTimestamp(log.timestamp)}]</span>
-                    <span>{getStepIcon(log.step)}</span>
-                    <span className="text-green-400">{log.message}</span>
+        <CardContent className="space-y-6">
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 bg-red-500/10 border-2 border-red-500/50 rounded-lg">
+              <div className="flex items-start gap-3">
+                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="font-semibold text-red-400 mb-1">Generation Error</div>
+                  <div className="text-sm text-red-300">{error}</div>
+                  <div className="mt-2 text-xs text-red-400/70">
+                    Check the console logs below for more details or try regenerating with a different prompt.
                   </div>
-                ))
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Generation Logs */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Clock className="w-4 h-4 text-blue-500" />
+                Generation Timeline
+                {logs.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {logs.length} events
+                  </Badge>
+                )}
+              </div>
+              {logs.length > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  Total: {getElapsedTime()}
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-gradient-to-br from-gray-950 to-black rounded-lg p-4 font-mono text-xs max-h-[400px] overflow-y-auto border-2 border-gray-800 shadow-inner">
+              {logs.length === 0 ? (
+                <div className="text-center py-8">
+                  <Terminal className="w-12 h-12 mx-auto mb-3 text-gray-700" />
+                  <div className="text-gray-500">No logs yet. Generate a game to see the process.</div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {logs.map((log, i) => (
+                    <div key={i} className="group hover:bg-white/5 rounded px-2 py-1.5 transition-colors">
+                      <div className="flex items-start gap-2">
+                        <span className="text-gray-600 text-[10px] font-medium min-w-[90px] flex-shrink-0">
+                          [{formatTimestamp(log.timestamp)}]
+                        </span>
+                        <span className="flex-shrink-0">{getStepIcon(log.step)}</span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {getLogTypeIcon(log.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className={`${getLogTypeColor(log.type)} break-words`}>
+                            {log.message}
+                          </span>
+                          {log.details && (
+                            <div className="text-gray-500 text-[10px] mt-1 pl-4 border-l-2 border-gray-800">
+                              {log.details}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

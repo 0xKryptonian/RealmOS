@@ -34,7 +34,7 @@ export function generateStrategyGame(spec: GameSpec): string {
 <body>
   <div id="game-container"></div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -54,7 +54,7 @@ export function generateStrategyGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#1a1a1a'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     const PATH = [
       { x: 0, y: 200 },

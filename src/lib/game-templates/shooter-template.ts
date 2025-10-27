@@ -57,7 +57,7 @@ export function generateShooterGame(spec: GameSpec): string {
   </div>
   <script>
     // Game Configuration
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -77,7 +77,7 @@ export function generateShooterGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#0a0a2e'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     // Auto-focus game container
     const container = document.getElementById('game-container');

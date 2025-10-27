@@ -1,6 +1,6 @@
 import { BaseAgent, AgentConfig, AgentResponse } from './base-agent';
-import { HederaTokenService } from '../hedera/token';
-import { HederaNFTService } from '../hedera/nft';
+import { HederaTokenService } from '@/lib/hedera/token';
+import { HederaNFTService } from '@/lib/hedera/nft';
 import { TokenId, AccountId, PrivateKey } from '@hashgraph/sdk';
 
 export interface RewardConfig {

@@ -55,7 +55,7 @@ export function generateBoardGame(spec: GameSpec): string {
     <small>Click "Roll Dice" to play</small>
   </div>
   <script>
-    const config = {
+    const gameConfig = {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
@@ -68,7 +68,7 @@ export function generateBoardGame(spec: GameSpec): string {
       backgroundColor: '${visuals.colorScheme === 'monochrome' ? '#000000' : '#2F4F4F'}'
     };
 
-    const game = new Phaser.Game(config);
+    const game = new Phaser.Game(gameConfig);
     
     const container = document.getElementById('game-container');
     const instructions = document.getElementById('instructions');
