@@ -5,12 +5,13 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const tournament = await prisma.communityEvent.findUnique({
       where: {
-        id: params.id,
+        id,
       },
       include: {
         participants: {
@@ -37,13 +38,14 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { title, description, imageUrl, startTime, endTime, prizePool, maxParticipants, isActive } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, string | Date | number | boolean | null> = {};
     
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -56,7 +58,7 @@ export async function PATCH(
 
     const tournament = await prisma.communityEvent.update({
       where: {
-        id: params.id,
+        id,
       },
       data: updateData,
     });
@@ -70,12 +72,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.communityEvent.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 

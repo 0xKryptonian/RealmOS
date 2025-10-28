@@ -5,9 +5,10 @@ const prisma = new PrismaClient();
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -17,7 +18,7 @@ export async function POST(
 
     // Find guild
     const guild = await prisma.guild.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!guild) {
@@ -66,9 +67,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get('userId');
 
@@ -78,7 +80,7 @@ export async function DELETE(
 
     // Find guild
     const guild = await prisma.guild.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!guild) {

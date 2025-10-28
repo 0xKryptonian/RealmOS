@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const gameId = searchParams.get('gameId');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       isActive: true,
     };
 

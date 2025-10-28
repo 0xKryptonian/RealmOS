@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       OR: [
         { senderId: userId },
         { receiverId: userId },

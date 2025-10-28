@@ -5,12 +5,13 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const guild = await prisma.guild.findUnique({
       where: {
-        slug: params.slug,
+        slug,
       },
       include: {
         members: {
@@ -47,13 +48,14 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const body = await request.json();
     const { name, description, imageUrl, bannerUrl, isPublic } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, string | boolean> = {};
     
     if (name !== undefined) {
       updateData.name = name;
@@ -66,7 +68,7 @@ export async function PATCH(
 
     const guild = await prisma.guild.update({
       where: {
-        slug: params.slug,
+        slug,
       },
       data: updateData,
     });
@@ -80,12 +82,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     await prisma.guild.delete({
       where: {
-        slug: params.slug,
+        slug,
       },
     });
 

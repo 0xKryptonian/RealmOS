@@ -5,9 +5,10 @@ const prisma = new PrismaClient();
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
@@ -17,7 +18,7 @@ export async function POST(
 
     // Check if tournament exists
     const tournament = await prisma.communityEvent.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: { participants: true },
@@ -38,7 +39,7 @@ export async function POST(
     const existingParticipant = await prisma.communityEventParticipant.findUnique({
       where: {
         eventId_userId: {
-          eventId: params.id,
+          eventId: id,
           userId,
         },
       },
@@ -51,7 +52,7 @@ export async function POST(
     // Register user
     const participant = await prisma.communityEventParticipant.create({
       data: {
-        eventId: params.id,
+        eventId: id,
         userId,
         status: 'REGISTERED',
       },
@@ -66,9 +67,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get('userId');
 
@@ -79,7 +81,7 @@ export async function DELETE(
     await prisma.communityEventParticipant.delete({
       where: {
         eventId_userId: {
-          eventId: params.id,
+          eventId: id,
           userId,
         },
       },

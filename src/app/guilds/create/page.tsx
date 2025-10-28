@@ -37,16 +37,32 @@ export default function CreateGuildPage() {
 
     setCreating(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch('/api/guilds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          description: formData.description || null,
+          isPublic: formData.isPublic,
+          founderId: userAccountId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create guild');
+      }
+
+      const data = await response.json();
 
       toast.success('Guild created successfully!', {
         description: `${formData.name} is now live`,
       });
 
       router.push('/guilds');
-    } catch (error) {
-      toast.error('Failed to create guild. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create guild. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setCreating(false);
     }

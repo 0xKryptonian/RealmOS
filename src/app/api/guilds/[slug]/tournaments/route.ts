@@ -5,11 +5,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const guild = await prisma.guild.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!guild) {
@@ -34,9 +35,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params;
     const body = await request.json();
     const { title, description, prizePool, startDate, endDate } = body;
 
@@ -48,7 +50,7 @@ export async function POST(
     }
 
     const guild = await prisma.guild.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!guild) {
