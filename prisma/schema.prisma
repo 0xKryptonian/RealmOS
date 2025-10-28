@@ -356,16 +356,137 @@ model StreamingSession {
   id            String   @id @default(cuid())
   userId        String
   streamId      String   // Livepeer stream ID
+  playbackId    String?  // Livepeer playback ID
   title         String
   description   String?
   gameId        String?
-  status        String   // LIVE, ENDED
+  eventId       String?  // Link to GameEvent
+  status        String   // LIVE, ENDED, SCHEDULED
   viewerCount   Int      @default(0)
   rewardPool    String?  // REALM tokens for viewers
+  thumbnailUrl  String?
   startedAt     DateTime @default(now())
   endedAt       DateTime?
   
   @@index([userId])
   @@index([status])
+  @@index([eventId])
+}
+
+// Guild System
+model Guild {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  description   String?
+  imageUrl      String?
+  bannerUrl     String?
+  founderId     String
+  treasuryBalance String @default("0") // REALM tokens
+  memberCount   Int      @default(1)
+  isPublic      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  members       GuildMember[]
+  tournaments   GuildTournament[]
+  
+  @@index([founderId])
+  @@index([slug])
+}
+
+model GuildMember {
+  id            String   @id @default(cuid())
+  guildId       String
+  guild         Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId        String
+  role          String   // FOUNDER, ADMIN, MEMBER
+  joinedAt      DateTime @default(now())
+  contribution  String   @default("0") // REALM tokens contributed
+  
+  @@unique([guildId, userId])
+  @@index([userId])
+  @@index([guildId])
+}
+
+model GuildTournament {
+  id            String   @id @default(cuid())
+  guildId       String
+  guild         Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  prizePool     String
+  status        String   // UPCOMING, ACTIVE, COMPLETED
+  startDate     DateTime
+  endDate       DateTime
+  createdAt     DateTime @default(now())
+  
+  @@index([guildId])
+  @@index([status])
+}
+
+// Friend System
+model Friendship {
+  id            String   @id @default(cuid())
+  requesterId   String
+  addresseeId   String
+  status        String   // PENDING, ACCEPTED, BLOCKED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId])
+  @@index([addresseeId])
+  @@index([status])
+}
+
+// Direct Messaging
+model DirectMessage {
+  id            String   @id @default(cuid())
+  senderId      String
+  receiverId    String
+  content       String
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+// Community Events (Enhanced)
+model CommunityEvent {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  imageUrl      String
+  eventType     String   // TOURNAMENT, LIVESTREAM, MEETUP, WORKSHOP
+  startTime     DateTime
+  endTime       DateTime?
+  location      String?
+  streamId      String?  // Link to StreamingSession
+  prizePool     String?
+  maxParticipants Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  participants  CommunityEventParticipant[]
+  
+  @@index([startTime])
+  @@index([eventType])
+  @@index([isActive])
+}
+
+model CommunityEventParticipant {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         CommunityEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId        String
+  status        String   // REGISTERED, ATTENDED, COMPLETED
+  registeredAt  DateTime @default(now())
+  
+  @@unique([eventId, userId])
+  @@index([userId])
 }
 
