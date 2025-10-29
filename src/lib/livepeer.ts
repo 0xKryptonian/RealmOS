@@ -1,24 +1,12 @@
-// import { createReactClient } from "@livepeer/react";
-// import { studioProvider } from "@livepeer/react/providers/studio";
+/**
+ * Livepeer Configuration
+ * 
+ * For client-side video playback, use @livepeer/react components directly in your components.
+ * For server-side stream management, use the LivepeerService class.
+ * 
+ * @see src/lib/streaming/livepeer-service.ts for server-side API calls
+ * @see src/components/stream/StreamPlayer.tsx for client-side playback
+ * @see src/components/stream/LivestreamPlayer.tsx for simple playback
+ */
 
-// const LivepeerClient = createReactClient({
-//     provider: studioProvider({ apiKey: "YOUR_API_KEY" }),
-// });
-
-// export default LivepeerClient;
-
-import { Livepeer } from "livepeer";
-import { streamKey } from "./constants";
-
-const livepeer = new Livepeer({
-    apiKey: streamKey,
-});
-
-const main = async () => {
-    const { stream } = await livepeer.stream.create({
-        name: "Hello from JS SDK!",
-    });
-    console.log(stream);
-};
-
-main();
+export { streamKey } from "./constants";

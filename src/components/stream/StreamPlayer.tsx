@@ -104,8 +104,8 @@ export function PlayerWithControls(props: { src: Src[] | null }) {
                             </Player.PlayPauseTrigger>
 
                             <Player.LiveIndicator className="gap-2 flex items-center">
-                                <div className="bg-red-600 h-1.5 w-1.5 rounded-full" />
-                                <span className="text-sm select-none">LIVE</span>
+                                <div className="bg-red-500 h-1.5 w-1.5 rounded-full animate-pulse" />
+                                <span className="text-sm select-none font-medium" style={{ color: '#98ee2c' }}>LIVE</span>
                             </Player.LiveIndicator>
                             <Player.LiveIndicator
                                 matcher={false}
@@ -124,9 +124,9 @@ export function PlayerWithControls(props: { src: Src[] | null }) {
                             </Player.MuteTrigger>
                             <Player.Volume className="relative mr-1 flex-1 group flex cursor-pointer items-center select-none touch-none max-w-[120px] h-5">
                                 <Player.Track className="bg-white/30 relative grow rounded-full transition h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
-                                    <Player.Range className="absolute bg-white rounded-full h-full" />
+                                    <Player.Range className="absolute rounded-full h-full" style={{ backgroundColor: '#98ee2c' }} />
                                 </Player.Track>
-                                <Player.Thumb className="block transition group-hover:scale-110 w-3 h-3 bg-white rounded-full" />
+                                <Player.Thumb className="block transition group-hover:scale-110 w-3 h-3 rounded-full" style={{ backgroundColor: '#98ee2c' }} />
                             </Player.Volume>
                         </div>
                         <div className="flex sm:flex-1 md:flex-[1.5] justify-end items-center gap-2.5">
@@ -153,9 +153,9 @@ export function PlayerWithControls(props: { src: Src[] | null }) {
                     <Player.Seek className="relative group flex cursor-pointer items-center select-none touch-none w-full h-5">
                         <Player.Track className="bg-white/30 relative grow rounded-full transition h-[2px] md:h-[3px] group-hover:h-[3px] group-hover:md:h-[4px]">
                             <Player.SeekBuffer className="absolute bg-black/30 transition duration-1000 rounded-full h-full" />
-                            <Player.Range className="absolute bg-white rounded-full h-full" />
+                            <Player.Range className="absolute rounded-full h-full" style={{ backgroundColor: '#98ee2c' }} />
                         </Player.Track>
-                        <Player.Thumb className="block group-hover:scale-110 w-3 h-3 bg-white transition rounded-full" />
+                        <Player.Thumb className="block group-hover:scale-110 w-3 h-3 transition rounded-full" style={{ backgroundColor: '#98ee2c' }} />
                     </Player.Seek>
                 </Player.Controls>
             </Player.Container>

@@ -1,2 +1,1 @@
-
-export const streamKey = process.env.LIVEPEER_STREAM_KEY || "0xkey";
+export const streamKey = process.env.NEXT_PUBLIC_LIVEPEER_STREAM_KEY || process.env.LIVEPEER_STREAM_KEY || "";

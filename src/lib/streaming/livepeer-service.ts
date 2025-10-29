@@ -1,5 +1,8 @@
-import { Livepeer } from 'livepeer';
+// Livepeer service for managing streams
+// Note: This uses server-side API calls. For client-side playback, use @livepeer/react components
 import { streamKey } from '../constants';
+
+const LIVEPEER_API_URL = 'https://livepeer.studio/api';
 
 export interface LiveStream {
   id: string;
@@ -35,32 +38,39 @@ export interface TournamentStream {
 }
 
 export class LivepeerService {
-  private static livepeer = new Livepeer({
-    apiKey: streamKey,
-  });
-
   /**
-   * Create a new livestream
+   * Create a new livestream using Livepeer API
    */
   static async createStream(name: string): Promise<LiveStream> {
     try {
-      const { stream } = await this.livepeer.stream.create({
-        name,
-        record: true, // Enable recording for replays
-        multistream: {
-          targets: [], // Can add Twitch, YouTube targets
+      const response = await fetch(`${LIVEPEER_API_URL}/stream`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${streamKey}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          name,
+          record: true,
+          profiles: [
+            { name: '720p', bitrate: 2000000, fps: 30, width: 1280, height: 720 },
+            { name: '480p', bitrate: 1000000, fps: 30, width: 854, height: 480 },
+            { name: '360p', bitrate: 500000, fps: 30, width: 640, height: 360 },
+          ],
+        }),
       });
 
-      if (!stream) {
-        throw new Error('Failed to create stream');
+      if (!response.ok) {
+        throw new Error(`Failed to create stream: ${response.statusText}`);
       }
 
+      const stream = await response.json();
+
       return {
-        id: stream.id,
+        id: stream.id || '',
         streamKey: stream.streamKey || '',
         playbackId: stream.playbackId || '',
-        name: stream.name,
+        name: stream.name || name,
         isActive: stream.isActive || false,
         viewerCount: 0,
         createdAt: new Date(stream.createdAt || Date.now()),
@@ -102,19 +112,25 @@ export class LivepeerService {
    */
   static async getStream(streamId: string): Promise<LiveStream | null> {
     try {
-      const { stream } = await this.livepeer.stream.get(streamId);
+      const response = await fetch(`${LIVEPEER_API_URL}/stream/${streamId}`, {
+        headers: {
+          'Authorization': `Bearer ${streamKey}`,
+        },
+      });
 
-      if (!stream) {
+      if (!response.ok) {
         return null;
       }
 
+      const stream = await response.json();
+
       return {
-        id: stream.id,
+        id: stream.id || '',
         streamKey: stream.streamKey || '',
         playbackId: stream.playbackId || '',
-        name: stream.name,
+        name: stream.name || '',
         isActive: stream.isActive || false,
-        viewerCount: 0, // TODO: Get from analytics
+        viewerCount: 0,
         createdAt: new Date(stream.createdAt || Date.now()),
       };
     } catch (error) {
@@ -126,7 +142,7 @@ export class LivepeerService {
   /**
    * Get stream sessions (for analytics)
    */
-  static async getStreamSessions(streamId: string): Promise<StreamSession[]> {
+  static async getStreamSessions(_streamId: string): Promise<StreamSession[]> {
     try {
       // TODO: Implement session fetching from Livepeer
       return [];
@@ -141,8 +157,13 @@ export class LivepeerService {
    */
   static async deleteStream(streamId: string): Promise<boolean> {
     try {
-      await this.livepeer.stream.delete(streamId);
-      return true;
+      const response = await fetch(`${LIVEPEER_API_URL}/stream/${streamId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${streamKey}`,
+        },
+      });
+      return response.ok;
     } catch (error) {
       console.error('Error deleting stream:', error);
       return false;
@@ -152,7 +173,7 @@ export class LivepeerService {
   /**
    * Get stream viewership data
    */
-  static async getViewershipData(streamId: string): Promise<{
+  static async getViewershipData(_streamId: string): Promise<{
     currentViewers: number;
     peakViewers: number;
     totalViews: number;
@@ -178,18 +199,25 @@ export class LivepeerService {
     }>
   ): Promise<boolean> {
     try {
-      await this.livepeer.stream.update(streamId, {
-        multistream: {
-          targets: targets.map(t => ({
-            profile: t.platform,
-            spec: {
-              name: t.platform,
-              url: this.getStreamUrl(t.platform, t.streamKey),
-            },
-          })),
+      const response = await fetch(`${LIVEPEER_API_URL}/stream/${streamId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${streamKey}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          multistream: {
+            targets: targets.map(t => ({
+              profile: t.platform,
+              spec: {
+                name: t.platform,
+                url: this.getStreamUrl(t.platform, t.streamKey),
+              },
+            })),
+          },
+        }),
       });
-      return true;
+      return response.ok;
     } catch (error) {
       console.error('Error enabling multistream:', error);
       return false;
@@ -199,7 +227,7 @@ export class LivepeerService {
   /**
    * Get recording URL for a stream session
    */
-  static async getRecordingUrl(sessionId: string): Promise<string | null> {
+  static async getRecordingUrl(_sessionId: string): Promise<string | null> {
     // TODO: Fetch recording URL from Livepeer
     return null;
   }
@@ -210,10 +238,11 @@ export class LivepeerService {
   static async createHighlightClip(
     sessionId: string,
     startTime: number,
-    duration: number,
+    _duration: number,
     title: string
   ): Promise<string | null> {
     // TODO: Create clip using Livepeer API
+    console.log('Creating clip:', { sessionId, startTime, title });
     return null;
   }
 
@@ -260,7 +289,7 @@ export class LivepeerService {
   /**
    * Get stream health metrics
    */
-  static async getStreamHealth(streamId: string): Promise<{
+  static async getStreamHealth(_streamId: string): Promise<{
     isHealthy: boolean;
     bitrate: number;
     fps: number;
