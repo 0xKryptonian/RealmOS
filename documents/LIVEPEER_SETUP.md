@@ -1,10 +1,10 @@
 # Livepeer Streaming Setup Guide
 
-This guide explains how to set up and use Livepeer for live streaming in HederaVerse.
+This guide explains how to set up and use Livepeer for live streaming in RealmOS.
 
 ## Overview
 
-HederaVerse uses **@livepeer/react v4.3.6** for video streaming functionality. The deprecated `livepeer` package has been removed.
+RealmOS uses **@livepeer/react v4.3.6** for video streaming functionality. The deprecated `livepeer` package has been removed.
 
 ## Architecture
 
@@ -188,7 +188,7 @@ Calculates REALM token rewards for watching streams.
 
 ## Theme Customization
 
-All stream components use the HederaVerse theme color `#98ee2c`. This is applied to:
+All stream components use the RealmOS theme color `#98ee2c`. This is applied to:
 
 - Play/pause buttons
 - Volume controls

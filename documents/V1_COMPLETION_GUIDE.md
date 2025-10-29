@@ -1,4 +1,4 @@
-# HederaVerse v1 - Frontend Completion Guide
+# RealmOS v1 - Frontend Completion Guide
 
 ## ✅ What I've Built For You
 

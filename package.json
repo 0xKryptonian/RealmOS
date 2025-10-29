@@ -1,7 +1,7 @@
 {
-  "name": "hedera-verse",
+  "name": "realmos",
   "version": "1.0.0",
-  "description": "An Agentic Gaming Platform on Hedera Blockchain",
+  "description": "The First AI-Powered Gaming Operating System on Hedera",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

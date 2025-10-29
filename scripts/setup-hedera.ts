@@ -1,6 +1,6 @@
 /**
  * Hedera Setup Script
- * Creates all necessary tokens and HCS topics for HederaVerse
+ * Creates all necessary tokens and HCS topics for RealmOS
  * 
  * Run with: bun run scripts/setup-hedera.ts
  */
@@ -12,7 +12,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 async function setupHedera() {
-  console.log('🚀 Starting HederaVerse Setup...\n');
+  console.log('🚀 Starting RealmOS Setup...\n');
 
   try {
     // Initialize Hedera client
@@ -28,7 +28,7 @@ async function setupHedera() {
     // 1. Create REALM Token (Platform Currency)
     console.log('1️⃣  Creating REALM Token...');
     const realmToken = await HederaTokenService.createFungibleToken({
-      name: 'HederaVerse REALM',
+      name: 'RealmOS REALM',
       symbol: 'REALM',
       decimals: 8,
       initialSupply: 1000000, // 1 million initial supply
@@ -43,7 +43,7 @@ async function setupHedera() {
     // 2. Create Profile NFT Collection
     console.log('2️⃣  Creating Profile NFT Collection...');
     const profileNFT = await HederaTokenService.createNFTCollection({
-      name: 'HederaVerse Profile',
+      name: 'RealmOS Profile',
       symbol: 'HVPROFILE',
       treasuryId: operatorId,
       adminKey: operatorKey,
@@ -55,7 +55,7 @@ async function setupHedera() {
     // 3. Create Game Asset NFT Collection
     console.log('3️⃣  Creating Game Asset NFT Collection...');
     const gameNFT = await HederaTokenService.createNFTCollection({
-      name: 'HederaVerse Game Assets',
+      name: 'RealmOS Game Assets',
       symbol: 'HVGAME',
       treasuryId: operatorId,
       adminKey: operatorKey,
@@ -67,7 +67,7 @@ async function setupHedera() {
     // 4. Create Achievement NFT Collection
     console.log('4️⃣  Creating Achievement NFT Collection...');
     const achievementNFT = await HederaTokenService.createNFTCollection({
-      name: 'HederaVerse Achievements',
+      name: 'RealmOS Achievements',
       symbol: 'HVACH',
       treasuryId: operatorId,
       adminKey: operatorKey,
@@ -79,7 +79,7 @@ async function setupHedera() {
     // 5. Create Leaderboard HCS Topic
     console.log('5️⃣  Creating Leaderboard HCS Topic...');
     const leaderboardTopic = await HederaConsensusService.createTopic({
-      memo: 'HederaVerse Leaderboard',
+      memo: 'RealmOS Leaderboard',
       adminKey: operatorKey,
     });
     envUpdates.LEADERBOARD_TOPIC_ID = leaderboardTopic.toString();
@@ -88,7 +88,7 @@ async function setupHedera() {
     // 6. Create Game Events HCS Topic
     console.log('6️⃣  Creating Game Events HCS Topic...');
     const gameEventsTopic = await HederaConsensusService.createTopic({
-      memo: 'HederaVerse Game Events',
+      memo: 'RealmOS Game Events',
       adminKey: operatorKey,
     });
     envUpdates.GAME_EVENTS_TOPIC_ID = gameEventsTopic.toString();
@@ -97,7 +97,7 @@ async function setupHedera() {
     // 7. Create Tournament HCS Topic
     console.log('7️⃣  Creating Tournament HCS Topic...');
     const tournamentTopic = await HederaConsensusService.createTopic({
-      memo: 'HederaVerse Tournaments',
+      memo: 'RealmOS Tournaments',
       adminKey: operatorKey,
     });
     envUpdates.TOURNAMENT_TOPIC_ID = tournamentTopic.toString();
@@ -110,7 +110,7 @@ async function setupHedera() {
 
     // Print summary
     console.log('═══════════════════════════════════════════════════════');
-    console.log('✨ HederaVerse Setup Complete! ✨');
+    console.log('✨ RealmOS Setup Complete! ✨');
     console.log('═══════════════════════════════════════════════════════');
     console.log('\n📋 Summary:');
     console.log(`   REALM Token:        ${envUpdates.REALM_TOKEN_ID}`);

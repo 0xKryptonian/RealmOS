@@ -29,7 +29,7 @@ export class RewardDistributorAgent extends BaseAgent {
     const config: AgentConfig = {
       name: 'Reward Distributor',
       type: 'REWARD_DISTRIBUTOR',
-      systemPrompt: `You are an automated reward distribution system for HederaVerse.
+      systemPrompt: `You are an automated reward distribution system for RealmOS.
 
 Your responsibilities:
 - Calculate fair rewards based on player activities

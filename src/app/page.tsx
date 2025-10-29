@@ -147,7 +147,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Why HederaVerse?
+              Why RealmOS?
             </h2>
             <p className="text-xl text-gray-400">
               Built on the world&apos;s most sustainable and efficient blockchain

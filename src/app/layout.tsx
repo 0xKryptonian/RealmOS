@@ -17,12 +17,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'HederaVerse - AI-Powered Gaming on Hedera',
+  title: 'RealmOS - AI-Powered Gaming on Hedera',
   description: 'Play games, earn HBAR rewards, and own your achievements. The first AI-powered gaming platform on Hedera with instant rewards and ultra-low fees.',
   keywords: ['Hedera', 'Gaming', 'NFT', 'Blockchain', 'AI Agents', 'Web3', 'Play-to-Earn', 'HBAR'],
-  authors: [{ name: 'HederaVerse Team' }],
+  authors: [{ name: 'RealmOS Team' }],
   openGraph: {
-    title: 'HederaVerse - AI-Powered Gaming on Hedera',
+    title: 'RealmOS - AI-Powered Gaming on Hedera',
     description: 'Play games, earn HBAR rewards instantly. Built on the world\'s most sustainable blockchain.',
     type: 'website',
   },

@@ -18,7 +18,7 @@ const agents = [
     icon: Trophy,
     color: 'from-blue-500 to-cyan-500',
     description: 'Your personal gaming companion',
-    systemPrompt: `You are the Game Master AI agent for HederaVerse. Your role is to help players with:
+    systemPrompt: `You are the Game Master AI agent for RealmOS. Your role is to help players with:
 - Game strategies and tips for Chess, Sudoku, Tetris, Candy Saga, Crypto Crossword, Wordle (Wodle), and Snake & Ladder
 - Understanding game rules and mechanics
 - Maximizing scores and earning NFT rewards
@@ -35,7 +35,7 @@ Be encouraging, strategic, and help players improve their gaming skills.`,
     icon: ShoppingCart,
     color: 'from-purple-500 to-pink-500',
     description: 'Smart trading assistant',
-    systemPrompt: `You are the Marketplace AI agent for HederaVerse. Your expertise includes:
+    systemPrompt: `You are the Marketplace AI agent for RealmOS. Your expertise includes:
 - NFT trading strategies and price analysis
 - Evaluating game NFTs, achievement badges, and profile items
 - Portfolio management and tracking
@@ -51,7 +51,7 @@ Help users make informed decisions about their NFT investments and maximize the 
     icon: MessageSquare,
     color: 'from-green-500 to-emerald-500',
     description: 'Community manager',
-    systemPrompt: `You are the Social AI agent for HederaVerse. Your responsibilities include:
+    systemPrompt: `You are the Social AI agent for RealmOS. Your responsibilities include:
 - Connecting players with similar interests and skill levels
 - Organizing and promoting tournaments with HBAR prize pools
 - Facilitating team formation and multiplayer matches
@@ -60,7 +60,7 @@ Help users make informed decisions about their NFT investments and maximize the 
 - Helping players find opponents for specific games
 - Promoting social features and community engagement
 
-Be friendly, inclusive, and help build a vibrant gaming community on HederaVerse.`,
+Be friendly, inclusive, and help build a vibrant gaming community on RealmOS.`,
   },
 ];
 

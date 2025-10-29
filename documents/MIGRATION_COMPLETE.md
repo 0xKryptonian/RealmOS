@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-Successfully migrated **HederaVerse** from EVM-based (wagmi/RainbowKit/viem) to **100% Hedera Native** implementation using:
+Successfully migrated **RealmOS** from EVM-based (wagmi/RainbowKit/viem) to **100% Hedera Native** implementation using:
 - `@hashgraph/hedera-wallet-connect` for wallet connections
 - `@hashgraph/sdk` for transactions
 - Native HBAR for all payments (instead of REALM tokens)
@@ -236,7 +236,7 @@ NEXT_PUBLIC_LIVEPEER_STREAM_KEY="your-stream-key"
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    HederaVerse App                      │
+│                    RealmOS App                      │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌──────────────┐  ┌─────────────────┐  ┌──────────┐  │
@@ -411,4 +411,4 @@ For issues or questions:
 **Build Status: ✅ READY**  
 **Deployment: ✅ READY**
 
-🚀 **HederaVerse is now 100% Hedera Native!**
+🚀 **RealmOS is now 100% Hedera Native!**

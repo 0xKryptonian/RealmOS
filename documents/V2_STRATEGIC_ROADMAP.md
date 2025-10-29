@@ -1,8 +1,8 @@
-# HederaVerse v2 - Strategic Roadmap
+# RealmOS v2 - Strategic Roadmap
 
 ## 🚀 Vision Statement
 
-**Transform HederaVerse from a gaming platform into the ultimate AI-powered gaming metaverse on Hedera, combining AI game generation, 3D immersive experiences, and social gaming at scale.**
+**Transform RealmOS from a gaming platform into the ultimate AI-powered gaming metaverse on Hedera, combining AI game generation, 3D immersive experiences, and social gaming at scale.**
 
 ---
 
@@ -721,7 +721,7 @@ Use in any game for 2x rewards for 1 hour
 
 ## 📝 Conclusion
 
-**HederaVerse v2 will be the ultimate AI-powered gaming metaverse on Hedera**, combining:
+**RealmOS v2 will be the ultimate AI-powered gaming metaverse on Hedera**, combining:
 - ✅ AI game generation (like HederaMinihub)
 - ✅ 3D immersive worlds (like SafariVerse)
 - ✅ Professional esports infrastructure

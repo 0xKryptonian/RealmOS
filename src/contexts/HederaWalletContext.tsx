@@ -38,7 +38,7 @@ export function HederaWalletProvider({ children }: HederaWalletProviderProps) {
     const initConnector = async () => {
       try {
         const metadata = {
-          name: 'HederaVerse',
+          name: 'RealmOS',
           description: 'Agentic Gaming Platform on Hedera',
           url: typeof window !== 'undefined' ? window.location.origin : 'https://hederaverse.io',
           icons: ['https://hederaverse.io/icon.png'],

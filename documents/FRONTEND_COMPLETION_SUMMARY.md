@@ -1,4 +1,4 @@
-# HederaVerse v1 - Frontend Completion Summary
+# RealmOS v1 - Frontend Completion Summary
 
 ## ✅ COMPLETED FEATURES
 
@@ -276,7 +276,7 @@ bun run dev
 ### Perfect Demo Script (5 minutes)
 
 **1. Introduction (30 sec)**
-> "HederaVerse is the first AI-powered gaming platform on Hedera with 7 games, AI agents, and immutable leaderboards."
+> "RealmOS is the first AI-powered gaming platform on Hedera with 7 games, AI agents, and immutable leaderboards."
 
 **2. Connect Wallet (20 sec)**
 - Click "Connect Wallet"

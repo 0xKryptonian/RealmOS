@@ -1,5 +1,5 @@
 /**
- * ELO Rating System for HederaVerse
+ * ELO Rating System for RealmOS
  * Based on standard chess ELO with adjustments for gaming
  */
 

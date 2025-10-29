@@ -2,7 +2,7 @@
 
 ## Overview
 
-A simplified AI-powered game generation system for HederaVerse that converts natural language prompts into playable Phaser.js games in under 60 seconds.
+A simplified AI-powered game generation system for RealmOS that converts natural language prompts into playable Phaser.js games in under 60 seconds.
 
 ## Architecture
 
@@ -401,4 +401,4 @@ For issues or questions:
 
 ## License
 
-Part of HederaVerse platform - MIT License
+Part of RealmOS platform - MIT License

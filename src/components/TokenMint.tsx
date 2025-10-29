@@ -257,7 +257,7 @@ function TokenMint() {
                     <div>
                         <h4 className="font-medium mb-1">About REALM Tokens</h4>
                         <p className="text-sm">
-                            REALM tokens are the native currency of HederaVerse. Use them to play games, 
+                            REALM tokens are the native currency of RealmOS. Use them to play games, 
                             participate in tournaments, and earn rewards. Tokens are minted on Hedera Token Service (HTS).
                         </p>
                     </div>

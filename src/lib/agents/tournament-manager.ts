@@ -28,7 +28,7 @@ export class TournamentManagerAgent extends BaseAgent {
     const config: AgentConfig = {
       name: 'Tournament Manager',
       type: 'TOURNAMENT_MANAGER',
-      systemPrompt: `You are an automated tournament manager for HederaVerse.
+      systemPrompt: `You are an automated tournament manager for RealmOS.
       
 Your responsibilities:
 - Generate fair tournament brackets

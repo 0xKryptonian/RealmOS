@@ -1,7 +1,7 @@
-# Getting Started with HederaVerse
+# Getting Started with RealmOS
 
 ## Overview
-HederaVerse is now configured with a complete Hedera blockchain integration, AI agent system, and gaming infrastructure. This guide will help you get the platform running.
+RealmOS is now configured with a complete Hedera blockchain integration, AI agent system, and gaming infrastructure. This guide will help you get the platform running.
 
 ## ⚠️ Important Notes
 

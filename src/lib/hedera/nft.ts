@@ -32,7 +32,7 @@ export interface MintGameAssetNFTParams {
 }
 
 /**
- * NFT-specific operations for HederaVerse
+ * NFT-specific operations for RealmOS
  */
 export class HederaNFTService {
   /**

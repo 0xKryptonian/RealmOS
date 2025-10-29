@@ -21,7 +21,7 @@ export interface AgentResponse {
 }
 
 /**
- * Base Agent class for all AI agents in HederaVerse
+ * Base Agent class for all AI agents in RealmOS
  */
 export class BaseAgent {
   protected hederaToolkit?: HederaLangchainToolkit;

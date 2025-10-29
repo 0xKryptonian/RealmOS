@@ -31,7 +31,7 @@ const agents = [
     name: "Marketplace Agent",
     icon: ShoppingCart,
     color: "from-purple-500 to-pink-500",
-    description: "Smart trading assistant for buying, selling, and discovering NFTs in the HederaVerse marketplace.",
+    description: "Smart trading assistant for buying, selling, and discovering NFTs in the RealmOS marketplace.",
     capabilities: [
       "NFT price analysis and trends",
       "Automated buy/sell recommendations",

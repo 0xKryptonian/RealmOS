@@ -49,7 +49,7 @@ export function Footer() {
                 <Gamepad2 className="h-8 w-8 text-[#98ee2c] relative" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
-                HederaVerse
+                RealmOS
               </span>
             </Link>
             <p className="text-gray-400 text-sm mb-4 max-w-sm">
@@ -134,7 +134,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} HederaVerse. Built on{" "}
+              © {new Date().getFullYear()} RealmOS. Built on{" "}
               <a
                 href="https://hedera.com"
                 target="_blank"

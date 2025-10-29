@@ -1,4 +1,4 @@
-# 🎮 HederaVerse v1 - COMPLETE ✅
+# 🎮 RealmOS v1 - COMPLETE ✅
 
 ## 🎉 What's Been Built
 
@@ -349,7 +349,7 @@ bun run setup:hedera
 ## 🏆 Winning Points
 
 ### For Judges
-> "HederaVerse is the first AI-powered gaming platform on Hedera with immutable leaderboards, 3 specialized AI agents, and 7 professional games. We've built the most comprehensive Hedera integration in the hackathon."
+> "RealmOS is the first AI-powered gaming platform on Hedera with immutable leaderboards, 3 specialized AI agents, and 7 professional games. We've built the most comprehensive Hedera integration in the hackathon."
 
 ### Key Stats to Mention
 - **95% Hedera integration** (HTS + HCS + NFTs)

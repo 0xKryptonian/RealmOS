@@ -28,11 +28,11 @@ export async function initializeAgent(userAccountId: string) {
       },
     });
 
-    // Load the structured chat prompt template with HederaVerse context
-    const systemPrompt = `You are an AI assistant for HederaVerse, a blockchain gaming platform built on Hedera Hashgraph.
+    // Load the structured chat prompt template with RealmOS context
+    const systemPrompt = `You are an AI assistant for RealmOS, a blockchain gaming platform built on Hedera Hashgraph.
 
 PLATFORM OVERVIEW:
-HederaVerse is an agentic gaming platform where players can earn HBAR and NFT rewards by playing games, participating in tournaments, and engaging with the community.
+RealmOS is an agentic gaming platform where players can earn HBAR and NFT rewards by playing games, participating in tournaments, and engaging with the community.
 
 AVAILABLE GAMES:
 1. **Chess** - Strategic board game with NFT pieces and tournament support

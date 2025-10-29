@@ -9,7 +9,7 @@ export class GameAssistantAgent extends BaseAgent {
     const config: AgentConfig = {
       name: 'Game Assistant',
       type: 'GAME_ASSISTANT',
-      systemPrompt: `You are a helpful gaming assistant for HederaVerse, a blockchain gaming platform.
+      systemPrompt: `You are a helpful gaming assistant for RealmOS, a blockchain gaming platform.
       
 Your role is to:
 - Explain game rules and mechanics

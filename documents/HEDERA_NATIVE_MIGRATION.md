@@ -23,7 +23,7 @@ Successfully migrated from EVM-based (wagmi/RainbowKit) to **Hedera Native** imp
 - Replaced RainbowKit's `ConnectButton`
 - Shows Hedera account ID (not EVM address)
 - Dropdown menu with account info and disconnect option
-- Styled to match HederaVerse theme
+- Styled to match RealmOS theme
 
 ### 3. **Fixed Profile Page** (`src/app/profile/page.tsx`)
 **Removed:**

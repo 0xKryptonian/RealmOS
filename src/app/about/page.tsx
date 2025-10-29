@@ -146,7 +146,7 @@ export default function AboutPage() {
             About
             <br />
             <span className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
-              HederaVerse
+              RealmOS
             </span>
           </h1>
           <p className="text-xl text-gray-400 mb-8">

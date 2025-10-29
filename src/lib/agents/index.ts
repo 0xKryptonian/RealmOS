@@ -1,5 +1,5 @@
 /**
- * AI Agents for HederaVerse
+ * AI Agents for RealmOS
  * Exports all agent classes and utilities
  */
 

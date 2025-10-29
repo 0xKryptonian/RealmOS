@@ -33,7 +33,7 @@ const mockTournament = {
   playbackId: 'demo-playback-id',
   viewerCount: 1247,
   organizer: {
-    name: 'HederaVerse Esports',
+    name: 'RealmOS Esports',
     accountId: '0.0.12345',
   },
   bracket: {

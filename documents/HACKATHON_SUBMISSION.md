@@ -1,8 +1,8 @@
-# 🎮 HederaVerse
+# 🎮 RealmOS
 
 ## 🏆 Project Overview
 
-**HederaVerse** is the first AI-powered gaming platform built natively on Hedera, combining instant HBAR rewards, ultra-low fees, and three specialized AI agents to create an unparalleled gaming experience.
+**RealmOS** is the first AI-powered gaming platform built natively on Hedera, combining instant HBAR rewards, ultra-low fees, and three specialized AI agents to create an unparalleled gaming experience.
 
 ### 🎯 Problem We're Solving
 
@@ -15,7 +15,7 @@ Traditional blockchain gaming suffers from:
 
 ### ✨ Our Solution
 
-HederaVerse leverages Hedera's unique advantages:
+RealmOS leverages Hedera's unique advantages:
 - **100-10,000x cheaper** (~$0.0001 vs $1-$50)
 - **10-20x faster** (3-5 seconds vs 30-60 seconds)
 - **Carbon negative** (sustainable gaming)
@@ -128,14 +128,14 @@ HederaVerse leverages Hedera's unique advantages:
 | Platform | Entry Fee | Winner Reward | Net Profit |
 |----------|-----------|---------------|------------|
 | **EVM Gaming** | $1-$5 gas | NFT (~$3-5 gas) | **-$4 to -$10** |
-| **HederaVerse** | $0.005 | 0.5 HBAR | **+$0.02** |
+| **RealmOS** | $0.005 | 0.5 HBAR | **+$0.02** |
 
 ### **Speed Comparison**
 | Platform | Transaction Time | Finality |
 |----------|------------------|----------|
 | **Ethereum** | 12-60 seconds | 12-15 minutes |
 | **Polygon** | 2-5 seconds | 128 blocks |
-| **HederaVerse** | **3-5 seconds** | **Instant** |
+| **RealmOS** | **3-5 seconds** | **Instant** |
 
 ### **Environmental Impact**
 | Platform | Energy per TX | Carbon Footprint |
@@ -162,7 +162,7 @@ const tokenCreateTx = await new TokenCreateTransaction()
 
 // NFT minting
 const nftCreateTx = await new TokenCreateTransaction()
-  .setTokenName("HederaVerse Achievement")
+  .setTokenName("RealmOS Achievement")
   .setTokenType(TokenType.NonFungibleUnique)
   .execute(client);
 ```
@@ -447,11 +447,11 @@ Agent: "Your Chess Winner NFT is valued at 15 HBAR
 
 ## 📝 Conclusion
 
-HederaVerse represents the future of blockchain gaming: **fast, cheap, sustainable, and intelligent**. By leveraging Hedera's unique advantages and combining them with advanced AI, we've created a platform that's not just better than existing solutions—it's **100-10,000x better**.
+RealmOS represents the future of blockchain gaming: **fast, cheap, sustainable, and intelligent**. By leveraging Hedera's unique advantages and combining them with advanced AI, we've created a platform that's not just better than existing solutions—it's **100-10,000x better**.
 
 We're not just building a game. We're building the **infrastructure for the next generation of gaming**.
 
-**Thank you for considering HederaVerse for the Hedera Hackathon! 🚀**
+**Thank you for considering RealmOS for the Hedera Hackathon! 🚀**
 
 ---
 
