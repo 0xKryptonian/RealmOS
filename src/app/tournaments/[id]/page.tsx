@@ -215,7 +215,7 @@ export default function TournamentDetailPage() {
                   <div className="mt-4 p-4 bg-[#98ee2c]/10 border border-[#98ee2c]/30 rounded-lg">
                     <p className="text-sm text-gray-300">
                       💰 <strong>Watch-to-Earn:</strong> Earn REALM tokens by watching the tournament!
-                      You've earned <span className="text-[#98ee2c] font-bold">0.5 REALM</span> so far.
+                      You&apos;ve earned <span className="text-[#98ee2c] font-bold">0.5 REALM</span> so far.
                     </p>
                   </div>
                 </CardContent>
