@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Trophy, Info, Zap, Award } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -22,6 +24,12 @@ export default function CreateTournamentPage() {
     startTime: '',
     endTime: '',
     location: 'online',
+    format: 'SINGLE_ELIMINATION',
+    gameId: '',
+    entryFee: '',
+    enableStreaming: true,
+    enableNFTRewards: true,
+    enableELOSeeding: true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,8 +46,23 @@ export default function CreateTournamentPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          description: formData.description,
+          imageUrl: '/images/tournament-default.png',
+          eventType: 'TOURNAMENT',
+          startTime: new Date(formData.startTime).toISOString(),
+          endTime: formData.endTime ? new Date(formData.endTime).toISOString() : null,
+          location: formData.location,
+          prizePool: formData.prizePool || null,
           maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : null,
+          format: formData.format,
+          gameId: formData.gameId || null,
+          entryFee: formData.entryFee || null,
+          metadata: {
+            enableStreaming: formData.enableStreaming,
+            enableNFTRewards: formData.enableNFTRewards,
+            enableELOSeeding: formData.enableELOSeeding,
+          },
         }),
       });
 
@@ -122,6 +145,67 @@ export default function CreateTournamentPage() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="format" className="text-white">
+                  Tournament Format <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.format}
+                  onValueChange={(value) => setFormData({ ...formData, format: value })}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Select format" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-800 text-white">
+                    <SelectItem value="SINGLE_ELIMINATION">Single Elimination</SelectItem>
+                    <SelectItem value="DOUBLE_ELIMINATION">Double Elimination</SelectItem>
+                    <SelectItem value="ROUND_ROBIN">Round Robin</SelectItem>
+                    <SelectItem value="SWISS">Swiss System</SelectItem>
+                    <SelectItem value="BATTLE_ROYALE">Battle Royale</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Automated bracket generation based on format
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gameId" className="text-white">
+                    Game
+                  </Label>
+                  <Select
+                    value={formData.gameId}
+                    onValueChange={(value) => setFormData({ ...formData, gameId: value })}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue placeholder="Select game" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-gray-800 text-white">
+                      <SelectItem value="chess">Chess</SelectItem>
+                      <SelectItem value="tetris">Tetris</SelectItem>
+                      <SelectItem value="snake">Snake</SelectItem>
+                      <SelectItem value="sudoku">Sudoku</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="entryFee" className="text-white">
+                    Entry Fee (REALM)
+                  </Label>
+                  <Input
+                    id="entryFee"
+                    type="number"
+                    value={formData.entryFee}
+                    onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })}
+                    placeholder="e.g., 10"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="prizePool" className="text-white">
@@ -149,7 +233,96 @@ export default function CreateTournamentPage() {
                     placeholder="e.g., 32"
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                   />
+                  <p className="text-xs text-gray-400">
+                    {formData.enableELOSeeding && 'ELO-based seeding will be applied'}
+                  </p>
                 </div>
+              </div>
+
+              <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                <h3 className="text-white font-semibold flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-[#98ee2c]" />
+                  Tournament Features
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="enableStreaming" className="text-white font-medium">
+                        Live Streaming
+                      </Label>
+                      <p className="text-sm text-gray-400">
+                        Enable Livepeer streaming integration
+                      </p>
+                    </div>
+                    <Switch
+                      id="enableStreaming"
+                      checked={formData.enableStreaming}
+                      onCheckedChange={(checked) => setFormData({ ...formData, enableStreaming: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="enableNFTRewards" className="text-white font-medium">
+                        NFT Trophy Rewards
+                      </Label>
+                      <p className="text-sm text-gray-400">
+                        Mint NFT trophies for winners
+                      </p>
+                    </div>
+                    <Switch
+                      id="enableNFTRewards"
+                      checked={formData.enableNFTRewards}
+                      onCheckedChange={(checked) => setFormData({ ...formData, enableNFTRewards: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="enableELOSeeding" className="text-white font-medium">
+                        ELO-Based Seeding
+                      </Label>
+                      <p className="text-sm text-gray-400">
+                        Seed players based on ELO ratings
+                      </p>
+                    </div>
+                    <Switch
+                      id="enableELOSeeding"
+                      checked={formData.enableELOSeeding}
+                      onCheckedChange={(checked) => setFormData({ ...formData, enableELOSeeding: checked })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#98ee2c]/10 border border-[#98ee2c]/30 rounded-lg p-4">
+                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  <Award className="w-5 h-5" />
+                  Automated Features
+                </h3>
+                <ul className="space-y-2 text-sm text-gray-300">
+                  <li className="flex items-start">
+                    <span className="text-[#98ee2c] mr-2">✓</span>
+                    Automated bracket generation & match scheduling
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#98ee2c] mr-2">✓</span>
+                    Real-time match result submission
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#98ee2c] mr-2">✓</span>
+                    Automated prize distribution
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#98ee2c] mr-2">✓</span>
+                    Spectator mode for all matches
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#98ee2c] mr-2">✓</span>
+                    Tournament analytics & statistics
+                  </li>
+                </ul>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

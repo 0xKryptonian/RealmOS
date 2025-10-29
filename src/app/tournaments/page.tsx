@@ -5,11 +5,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Users, Calendar, Clock, Coins, Zap, Crown, Target } from 'lucide-react';
+import { Trophy, Users, Calendar, Clock, Coins, Zap, Plus } from 'lucide-react';
 import { useDAppConnector } from '@/components/client-providers';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,

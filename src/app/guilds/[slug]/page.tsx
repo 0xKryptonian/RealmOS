@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,72 +8,101 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Shield, Users, Trophy, Coins, MessageSquare, Calendar,
-  Send, Crown, TrendingUp, Target, Settings, UserPlus
+  Shield, Users, Trophy, Coins, MessageSquare,
+  Send, Crown, TrendingUp, Target, UserPlus
 } from 'lucide-react';
 import { useDAppConnector } from '@/components/client-providers';
 import { toast } from 'sonner';
 
-const mockGuild = {
-  id: '1',
-  name: 'Dragon Slayers',
-  slug: 'dragon-slayers',
-  description: 'Elite gaming guild focused on competitive tournaments and community growth. Join us to dominate the leaderboards!',
-  imageUrl: '/images/guild1.png',
-  bannerUrl: '/images/guild-banner.jpg',
-  founderId: '0.0.12345',
-  members: [
-    { accountId: '0.0.12345', username: 'DragonKing', role: 'FOUNDER', contribution: 50000, isActive: true },
-    { accountId: '0.0.23456', username: 'FireMage', role: 'ADMIN', contribution: 30000, isActive: true },
-    { accountId: '0.0.34567', username: 'IceWarrior', role: 'MEMBER', contribution: 15000, isActive: true },
-    { accountId: '0.0.45678', username: 'ThunderBolt', role: 'MEMBER', contribution: 12000, isActive: false },
-  ],
-  treasuryBalance: '125000',
-  treasuryCurrency: 'REALM' as const,
-  totalTournaments: 24,
-  totalWins: 18,
-  ranking: 3,
-  isPublic: true,
-  createdAt: new Date('2024-01-15'),
-  stats: {
-    winRate: 75,
-    avgPlacement: 2.1,
-    totalPrizes: '50000 HBAR',
-  },
-};
 
-const mockTournaments = [
-  { id: '1', title: 'Guild Chess Championship', status: 'ACTIVE', prize: '5000 REALM', participants: 16 },
-  { id: '2', title: 'Weekly Tetris Battle', status: 'UPCOMING', prize: '2000 REALM', participants: 8 },
-  { id: '3', title: 'Snake Masters Cup', status: 'COMPLETED', prize: '3000 REALM', participants: 12 },
-];
-
-const mockMessages = [
-  { id: '1', sender: 'DragonKing', content: 'Great tournament today everyone!', time: '2 min ago' },
-  { id: '2', sender: 'FireMage', content: 'When is the next practice session?', time: '5 min ago' },
-  { id: '3', sender: 'IceWarrior', content: 'I can help with strategy training tomorrow', time: '10 min ago' },
-];
-
-const mockEvents = [
-  { id: '1', title: 'Strategy Training Session', type: 'TRAINING', date: '2025-10-30', attendees: 12 },
-  { id: '2', title: 'Guild Tournament Finals', type: 'TOURNAMENT', date: '2025-11-02', attendees: 24 },
-  { id: '3', title: 'Community Hangout', type: 'SOCIAL', date: '2025-11-05', attendees: 18 },
-];
+interface Guild {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  bannerUrl: string | null;
+  founderId: string;
+  treasuryBalance: string;
+  memberCount: number;
+  isPublic: boolean;
+  members: Array<{
+    id: string;
+    userId: string;
+    role: string;
+    contribution: string;
+    joinedAt: string;
+  }>;
+  tournaments: Array<{
+    id: string;
+    title: string;
+    status: string;
+    prizePool: string;
+  }>;
+}
 
 export default function GuildDetailPage() {
   const params = useParams();
   const { userAccountId } = useDAppConnector() ?? {};
   const [message, setMessage] = useState('');
   const [contributionAmount, setContributionAmount] = useState('');
+  const [guild, setGuild] = useState<Guild | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
 
-  const handleJoinGuild = () => {
+  useEffect(() => {
+    if (params.slug) {
+      fetchGuildData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.slug]);
+
+  const fetchGuildData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/guilds/${params.slug}`);
+      if (!response.ok) throw new Error('Guild not found');
+      const data = await response.json();
+      setGuild(data.guild);
+      
+      // Check if user is a member
+      if (userAccountId && data.guild.members) {
+        setIsMember(data.guild.members.some((m: { userId: string }) => m.userId === userAccountId));
+      }
+    } catch (error) {
+      console.error('Error fetching guild:', error);
+      toast.error('Failed to load guild');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoinGuild = async () => {
     if (!userAccountId) {
       toast.error('Please connect your wallet to join');
       return;
     }
-    setIsMember(true);
-    toast.success(`Welcome to ${mockGuild.name}!`);
+    if (!guild) return;
+
+    try {
+      const response = await fetch(`/api/guilds/${guild.slug}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userAccountId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to join guild');
+      }
+
+      setIsMember(true);
+      toast.success(`Welcome to ${guild.name}!`);
+      fetchGuildData();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to join guild';
+      toast.error(errorMessage);
+    }
   };
 
   const handleSendMessage = () => {
@@ -87,9 +116,33 @@ export default function GuildDetailPage() {
       toast.error('Please enter a valid amount');
       return;
     }
-    toast.success(`Contributed ${contributionAmount} ${mockGuild.treasuryCurrency} to treasury!`);
+    toast.success(`Contributed ${contributionAmount} REALM to treasury!`);
     setContributionAmount('');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black pt-24 pb-20 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#98ee2c]"></div>
+      </div>
+    );
+  }
+
+  if (!guild) {
+    return (
+      <div className="min-h-screen bg-black pt-24 pb-20 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">Guild Not Found</h2>
+          <p className="text-gray-400">The guild you&apos;re looking for doesn&apos;t exist.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const ranking = 3;
+  const winRate = 75;
+  const totalWins = guild.tournaments?.filter(t => t.status === 'COMPLETED').length || 0;
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-20">
@@ -109,12 +162,12 @@ export default function GuildDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-4xl font-bold text-white">{mockGuild.name}</h1>
+                <h1 className="text-4xl font-bold text-white">{guild.name}</h1>
                 <Badge className="bg-[#98ee2c]/10 text-[#98ee2c] border-[#98ee2c]/30">
-                  #{mockGuild.ranking} Ranked
+                  #{ranking} Ranked
                 </Badge>
               </div>
-              <p className="text-gray-400 max-w-2xl">{mockGuild.description}</p>
+              <p className="text-gray-400 max-w-2xl">{guild.description || 'No description available'}</p>
             </div>
           </div>
           {!isMember && (
@@ -133,35 +186,35 @@ export default function GuildDetailPage() {
           <Card className="bg-white/5 backdrop-blur-sm border-white/10">
             <CardContent className="p-4 text-center">
               <Users className="h-6 w-6 text-[#98ee2c] mx-auto mb-1" />
-              <div className="text-2xl font-bold text-white">{mockGuild.members.length}</div>
+              <div className="text-2xl font-bold text-white">{guild.memberCount}</div>
               <div className="text-xs text-gray-400">Members</div>
             </CardContent>
           </Card>
           <Card className="bg-white/5 backdrop-blur-sm border-white/10">
             <CardContent className="p-4 text-center">
               <Coins className="h-6 w-6 text-[#98ee2c] mx-auto mb-1" />
-              <div className="text-2xl font-bold text-white">{parseInt(mockGuild.treasuryBalance).toLocaleString()}</div>
-              <div className="text-xs text-gray-400">{mockGuild.treasuryCurrency}</div>
+              <div className="text-2xl font-bold text-white">{parseInt(guild.treasuryBalance).toLocaleString()}</div>
+              <div className="text-xs text-gray-400">REALM</div>
             </CardContent>
           </Card>
           <Card className="bg-white/5 backdrop-blur-sm border-white/10">
             <CardContent className="p-4 text-center">
               <Trophy className="h-6 w-6 text-[#98ee2c] mx-auto mb-1" />
-              <div className="text-2xl font-bold text-white">{mockGuild.totalWins}</div>
+              <div className="text-2xl font-bold text-white">{totalWins}</div>
               <div className="text-xs text-gray-400">Wins</div>
             </CardContent>
           </Card>
           <Card className="bg-white/5 backdrop-blur-sm border-white/10">
             <CardContent className="p-4 text-center">
               <Target className="h-6 w-6 text-[#98ee2c] mx-auto mb-1" />
-              <div className="text-2xl font-bold text-white">{mockGuild.stats.winRate}%</div>
+              <div className="text-2xl font-bold text-white">{winRate}%</div>
               <div className="text-xs text-gray-400">Win Rate</div>
             </CardContent>
           </Card>
           <Card className="bg-white/5 backdrop-blur-sm border-white/10">
             <CardContent className="p-4 text-center">
               <TrendingUp className="h-6 w-6 text-[#98ee2c] mx-auto mb-1" />
-              <div className="text-2xl font-bold text-white">#{mockGuild.ranking}</div>
+              <div className="text-2xl font-bold text-white">#{ranking}</div>
               <div className="text-xs text-gray-400">Global Rank</div>
             </CardContent>
           </Card>
@@ -197,15 +250,9 @@ export default function GuildDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3 mb-4 h-96 overflow-y-auto">
-                      {mockMessages.map((msg) => (
-                        <div key={msg.id} className="p-3 bg-white/5 rounded-lg">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[#98ee2c] font-semibold">{msg.sender}</span>
-                            <span className="text-xs text-gray-500">{msg.time}</span>
-                          </div>
-                          <p className="text-white">{msg.content}</p>
-                        </div>
-                      ))}
+                      <div className="text-center py-12 text-gray-400">
+                        Guild chat coming soon! Connect with your guild members.
+                      </div>
                     </div>
                     {isMember && (
                       <div className="flex gap-2">
@@ -240,24 +287,29 @@ export default function GuildDetailPage() {
                     <CardTitle className="text-white">Guild Tournaments</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {mockTournaments.map((tournament) => (
-                      <div key={tournament.id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-white font-semibold">{tournament.title}</h3>
-                          <Badge className={
-                            tournament.status === 'ACTIVE' ? 'bg-[#98ee2c]' :
-                            tournament.status === 'UPCOMING' ? 'bg-blue-500' :
-                            'bg-gray-500'
-                          }>
-                            {tournament.status}
-                          </Badge>
+                    {guild.tournaments && guild.tournaments.length > 0 ? (
+                      guild.tournaments.map((tournament) => (
+                        <div key={tournament.id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-white font-semibold">{tournament.title}</h3>
+                            <Badge className={
+                              tournament.status === 'ACTIVE' ? 'bg-[#98ee2c]' :
+                              tournament.status === 'UPCOMING' ? 'bg-blue-500' :
+                              'bg-gray-500'
+                            }>
+                              {tournament.status}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-[#98ee2c] font-semibold">{tournament.prizePool} REALM</span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">{tournament.participants} participants</span>
-                          <span className="text-[#98ee2c] font-semibold">{tournament.prize}</span>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-400">
+                        No tournaments yet. Create one to get started!
                       </div>
-                    ))}
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -269,26 +321,9 @@ export default function GuildDetailPage() {
                     <CardTitle className="text-white">Upcoming Events</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {mockEvents.map((event) => (
-                      <div key={event.id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-white font-semibold">{event.title}</h3>
-                          <Badge variant="outline" className="border-[#98ee2c]/30 text-[#98ee2c]">
-                            {event.type}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {event.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {event.attendees} attending
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="text-center py-8 text-gray-400">
+                      No upcoming events. Check back later!
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -306,9 +341,9 @@ export default function GuildDetailPage() {
                     <div className="mb-6 p-6 bg-gradient-to-br from-[#98ee2c]/20 to-[#7bc922]/10 rounded-lg border border-[#98ee2c]/30">
                       <div className="text-sm text-gray-400 mb-2">Total Balance</div>
                       <div className="text-4xl font-bold text-white mb-1">
-                        {parseInt(mockGuild.treasuryBalance).toLocaleString()}
+                        {parseInt(guild.treasuryBalance).toLocaleString()}
                       </div>
-                      <div className="text-[#98ee2c]">{mockGuild.treasuryCurrency}</div>
+                      <div className="text-[#98ee2c]">REALM</div>
                     </div>
 
                     {isMember && (
@@ -348,22 +383,26 @@ export default function GuildDetailPage() {
             {/* Members */}
             <Card className="bg-white/5 backdrop-blur-sm border-white/10">
               <CardHeader>
-                <CardTitle className="text-white">Members ({mockGuild.members.length})</CardTitle>
+                <CardTitle className="text-white">Members ({guild.memberCount})</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {mockGuild.members.map((member) => (
-                  <div key={member.accountId} className="flex items-center justify-between p-2">
-                    <div>
-                      <div className="text-white font-semibold flex items-center gap-2">
-                        {member.username}
-                        {member.role === 'FOUNDER' && <Crown className="w-4 h-4 text-yellow-500" />}
-                        {member.role === 'ADMIN' && <Shield className="w-4 h-4 text-blue-500" />}
+                {guild.members && guild.members.length > 0 ? (
+                  guild.members.map((member) => (
+                    <div key={member.id} className="flex items-center justify-between p-2">
+                      <div>
+                        <div className="text-white font-semibold flex items-center gap-2">
+                          {member.userId}
+                          {member.role === 'FOUNDER' && <Crown className="w-4 h-4 text-yellow-500" />}
+                          {member.role === 'ADMIN' && <Shield className="w-4 h-4 text-blue-500" />}
+                        </div>
+                        <div className="text-xs text-gray-400">{member.role}</div>
                       </div>
-                      <div className="text-xs text-gray-400 font-mono">{member.accountId}</div>
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${member.isActive ? 'bg-green-500' : 'bg-gray-500'}`} />
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-400">No members yet</div>
+                )}
               </CardContent>
             </Card>
 
@@ -373,22 +412,26 @@ export default function GuildDetailPage() {
                 <CardTitle className="text-white">Top Contributors</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {mockGuild.members
-                  .sort((a, b) => b.contribution - a.contribution)
-                  .slice(0, 3)
-                  .map((member, index) => (
-                    <div key={member.accountId} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                {guild.members && guild.members.length > 0 ? (
+                  guild.members
+                    .sort((a, b) => parseInt(b.contribution) - parseInt(a.contribution))
+                    .slice(0, 3)
+                    .map((member, index) => (
+                      <div key={member.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                          </span>
+                          <span className="text-white">{member.userId}</span>
+                        </div>
+                        <span className="text-[#98ee2c] font-semibold">
+                          {parseInt(member.contribution).toLocaleString()}
                         </span>
-                        <span className="text-white">{member.username}</span>
                       </div>
-                      <span className="text-[#98ee2c] font-semibold">
-                        {member.contribution.toLocaleString()}
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                ) : (
+                  <div className="text-center py-4 text-gray-400">No contributors yet</div>
+                )}
               </CardContent>
             </Card>
           </div>
