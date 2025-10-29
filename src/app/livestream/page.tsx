@@ -49,13 +49,27 @@ export default function LivestreamPage() {
   const [streams, setStreams] = useState<Stream[]>(mockStreams);
 
   useEffect(() => {
-    // Load streams from localStorage
-    const savedStreams = localStorage.getItem('hedera-streams');
-    if (savedStreams) {
-      const parsedStreams = JSON.parse(savedStreams);
-      // Merge with mock streams
-      setStreams([...parsedStreams, ...mockStreams]);
-    }
+    // Load streams from API
+    const loadStreams = async () => {
+      try {
+        const response = await fetch('/api/livestream/list');
+        const data = await response.json();
+        
+        if (data.success && data.streams) {
+          // Merge API streams with mock streams
+          setStreams([...data.streams, ...mockStreams]);
+        } else {
+          // Fallback to mock streams only
+          setStreams(mockStreams);
+        }
+      } catch (error) {
+        console.error('Error loading streams:', error);
+        // Fallback to mock streams
+        setStreams(mockStreams);
+      }
+    };
+
+    loadStreams();
   }, []);
 
   return (

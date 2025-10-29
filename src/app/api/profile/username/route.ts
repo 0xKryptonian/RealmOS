@@ -29,21 +29,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if username is already taken
+    // Check if username is already taken by another user
     const existingUser = await prisma.user.findUnique({
       where: { username },
     });
 
-    if (existingUser && existingUser.hederaAccountId !== accountId) {
-      return NextResponse.json(
-        { error: 'Username is already taken' },
-        { status: 409 }
-      );
+    if (existingUser) {
+      // Check if it's the same user (by either field)
+      const isSameUser = 
+        existingUser.hederaAccountId === accountId || 
+        existingUser.walletAddress === accountId;
+      
+      if (!isSameUser) {
+        return NextResponse.json(
+          { error: 'Username is already taken' },
+          { status: 409 }
+        );
+      }
     }
 
-    // Find or create user
-    let user = await prisma.user.findUnique({
-      where: { hederaAccountId: accountId },
+    // Find user by either hederaAccountId or walletAddress
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { hederaAccountId: accountId },
+          { walletAddress: accountId },
+        ],
+      },
     });
 
     if (!user) {
@@ -57,7 +69,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       user = await prisma.user.update({
-        where: { hederaAccountId: accountId },
+        where: { id: user.id },
         data: { username },
       });
     }
@@ -88,8 +100,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { hederaAccountId: accountId },
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { hederaAccountId: accountId },
+          { walletAddress: accountId },
+        ],
+      },
       select: {
         username: true,
         name: true,

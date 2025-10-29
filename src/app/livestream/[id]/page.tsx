@@ -18,6 +18,7 @@ interface StreamData {
   streamer: string;
   streamerId?: string;
   streamerAccountId?: string;
+  streamerWalletAddress?: string;
   game: string;
   viewerCount: number;
   isLive: boolean;
@@ -36,7 +37,17 @@ export default function LivestreamDetailPage({ params }: { params: Promise<{ id:
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Array<{ id: string; text: string; sender: string; timestamp: number }>>([]);
 
-  const isOwner = stream && userAccountId && (stream.streamerAccountId === userAccountId);
+  const isOwner = stream && userAccountId && (
+    stream.streamerAccountId === userAccountId || 
+    stream.streamerWalletAddress === userAccountId
+  );
+  
+  console.log('Owner check:', { 
+    userAccountId, 
+    streamerAccountId: stream?.streamerAccountId,
+    streamerWalletAddress: stream?.streamerWalletAddress,
+    isOwner 
+  });
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -47,12 +58,17 @@ export default function LivestreamDetailPage({ params }: { params: Promise<{ id:
     // Load stream data from API
     const loadStream = async () => {
       try {
+        console.log('Fetching stream:', id);
         const response = await fetch(`/api/livestream/${id}`);
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (data.success && data.stream) {
+          console.log('Stream loaded from API:', data.stream);
           setStream(data.stream);
         } else {
+          console.log('Stream not found in API, using mock data');
           // Fallback to mock data for demo
           const mockStreams: StreamData[] = [
             {
@@ -223,6 +239,143 @@ export default function LivestreamDetailPage({ params }: { params: Promise<{ id:
                 </div>
               </div>
             </div>
+
+            {/* Owner Dashboard - Only visible to stream owner */}
+            {isOwner && stream.streamKey && (
+              <Card className="bg-gradient-to-br from-[#98ee2c]/10 to-[#7bc922]/5 border-[#98ee2c]/30 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Key className="w-5 h-5 text-[#98ee2c]" />
+                    Stream Configuration (Owner Only)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Stream Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-black/30 p-4 rounded-lg">
+                      <p className="text-xs text-gray-400 mb-1">Stream ID</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-mono text-white truncate mr-2">{stream.id}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(stream.id, 'Stream ID')}
+                          className="h-7 px-2 text-[#98ee2c] hover:bg-[#98ee2c]/20"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="bg-black/30 p-4 rounded-lg">
+                      <p className="text-xs text-gray-400 mb-1">Playback ID</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-mono text-white truncate mr-2">{stream.playbackId}</p>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(stream.playbackId, 'Playback ID')}
+                          className="h-7 px-2 text-[#98ee2c] hover:bg-[#98ee2c]/20"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stream Key */}
+                  <div className="bg-black/30 p-4 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">Stream Key (Keep Secret!)</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-mono text-white truncate mr-2">{stream.streamKey}</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => copyToClipboard(stream.streamKey!, 'Stream Key')}
+                        className="h-7 px-2 text-[#98ee2c] hover:bg-[#98ee2c]/20"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* RTMP URL */}
+                  <div className="bg-black/30 p-4 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">RTMP Server URL</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-mono text-white truncate mr-2">
+                        {stream.rtmpUrl || 'rtmp://rtmp.livepeer.com/live'}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => copyToClipboard(stream.rtmpUrl || 'rtmp://rtmp.livepeer.com/live', 'RTMP URL')}
+                        className="h-7 px-2 text-[#98ee2c] hover:bg-[#98ee2c]/20"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* OBS Setup Instructions */}
+                  <div className="bg-black/30 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <VideoIcon className="w-5 h-5 text-[#98ee2c]" />
+                      <h3 className="text-white font-semibold">OBS Studio Setup</h3>
+                    </div>
+                    <ol className="space-y-2 text-sm text-gray-300">
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">1.</span>
+                        <span>Open OBS Studio</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">2.</span>
+                        <span>Go to <strong>Settings → Stream</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">3.</span>
+                        <span>Service: Select <strong>Custom</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">4.</span>
+                        <span>Server: <code className="bg-black/50 px-2 py-1 rounded text-xs">rtmp://rtmp.livepeer.com/live</code></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">5.</span>
+                        <span>Stream Key: Paste your stream key (copied above)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-[#98ee2c] font-bold">6.</span>
+                        <span>Click <strong>Apply</strong> and <strong>Start Streaming</strong></span>
+                      </li>
+                    </ol>
+                  </div>
+
+                  {/* Recommended Settings */}
+                  <div className="bg-black/30 p-4 rounded-lg">
+                    <h3 className="text-white font-semibold mb-3 text-sm">Recommended Settings</h3>
+                    <div className="grid grid-cols-2 gap-3 text-xs text-gray-300">
+                      <div>
+                        <p className="text-gray-400">Resolution</p>
+                        <p className="font-medium">1920x1080 (1080p)</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">Bitrate</p>
+                        <p className="font-medium">4500-6000 kbps</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">Framerate</p>
+                        <p className="font-medium">30 or 60 FPS</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400">Encoder</p>
+                        <p className="font-medium">x264 or NVENC</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Chat section */}

@@ -8,18 +8,13 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const stream = await prisma.streamingSession.findUnique({
-      where: { streamId: id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            name: true,
-            hederaAccountId: true,
-            walletAddress: true,
-          },
-        },
+    // Try to find stream by streamId first
+    let stream = await prisma.streamingSession.findFirst({
+      where: { 
+        OR: [
+          { streamId: id },
+          { id: id }
+        ]
       },
     });
 
@@ -30,21 +25,44 @@ export async function GET(
       );
     }
 
+    // Get user info
+    const user = await prisma.user.findUnique({
+      where: { id: stream.userId },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        hederaAccountId: true,
+        walletAddress: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Stream owner not found' },
+        { status: 404 }
+      );
+    }
+
     // Transform to match frontend interface
+    // Use type assertion to access fields that may not exist in current Prisma client
+    const streamAny = stream as any;
+    
     const transformedStream = {
       id: stream.streamId,
       playbackId: stream.playbackId || '',
       title: stream.title,
-      streamer: stream.user.username || stream.user.name || stream.user.hederaAccountId || stream.user.walletAddress,
+      streamer: user.username || user.name || user.hederaAccountId || user.walletAddress,
       streamerId: stream.userId,
-      streamerAccountId: stream.user.hederaAccountId,
-      game: stream.game || 'Gaming',
+      streamerAccountId: user.hederaAccountId || user.walletAddress,
+      streamerWalletAddress: user.walletAddress,
+      game: streamAny.game || 'Gaming',
       viewerCount: stream.viewerCount,
-      isLive: stream.isLive,
+      isLive: streamAny.isLive || false,
       description: stream.description,
       startedAt: stream.startedAt.toISOString(),
-      streamKey: stream.streamKey,
-      rtmpUrl: stream.rtmpUrl,
+      streamKey: streamAny.streamKey || null,
+      rtmpUrl: streamAny.rtmpUrl || 'rtmp://rtmp.livepeer.com/live',
     };
 
     return NextResponse.json({

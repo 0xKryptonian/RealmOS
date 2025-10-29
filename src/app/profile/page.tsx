@@ -100,13 +100,6 @@ export default function ProfilePage() {
         fetchBalance();
     }, [accountId]);
 
-    // Handle wallet connection
-    useEffect(() => {
-        if (isConnected && accountId) {
-            fetchProfileData()
-        }
-    }, [isConnected, accountId])
-
     // Define fetchProfileData as a useCallback to avoid dependency issues
     const fetchProfileData = useCallback(async () => {
         if (!isConnected || !accountId) return
@@ -143,6 +136,30 @@ export default function ProfilePage() {
             setIsLoading(false)
         }
     }, [accountId, isConnected])
+
+    // Fetch username
+    useEffect(() => {
+        const fetchUsername = async () => {
+            if (!accountId) return;
+            try {
+                const response = await fetch(`/api/profile/username?accountId=${accountId}`);
+                const data = await response.json();
+                if (data.success && data.username) {
+                    setUsername(data.username);
+                }
+            } catch (error) {
+                console.error('Failed to fetch username:', error);
+            }
+        };
+        fetchUsername();
+    }, [accountId]);
+
+    // Handle wallet connection
+    useEffect(() => {
+        if (isConnected && accountId) {
+            fetchProfileData()
+        }
+    }, [isConnected, accountId, fetchProfileData])
 
     const gamesPlayedCount = transactions.filter(tx => tx.type === "GAME_PAYMENT").length;
 
@@ -191,6 +208,98 @@ export default function ProfilePage() {
                                 <p className="text-gray-400 text-sm">{profile?.walletAddress || "Not connected"}</p>
 
                                 <div className="mt-4 w-full">
+                                    {/* Username Section */}
+                                    <div className="bg-[#151515] p-4 rounded-md mb-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-sm text-gray-400">Username</p>
+                                            {!isEditingUsername && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => {
+                                                        setIsEditingUsername(true);
+                                                        setNewUsername(username || '');
+                                                    }}
+                                                    className="h-6 px-2 text-[#98ee2c] hover:text-[#7bc922] hover:bg-[#98ee2c]/10"
+                                                >
+                                                    <Edit2 className="w-3 h-3 mr-1" />
+                                                    {username ? 'Edit' : 'Set'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                        {isEditingUsername ? (
+                                            <div className="space-y-2">
+                                                <Input
+                                                    value={newUsername}
+                                                    onChange={(e) => setNewUsername(e.target.value)}
+                                                    placeholder="Enter username (3-20 chars)"
+                                                    className="bg-[#202020] border-gray-600 text-white"
+                                                    maxLength={20}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={async () => {
+                                                            if (!newUsername.trim() || newUsername.length < 3) {
+                                                                toast.error('Username must be 3-20 characters');
+                                                                return;
+                                                            }
+                                                            setIsSavingUsername(true);
+                                                            try {
+                                                                const response = await fetch('/api/profile/username', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        accountId,
+                                                                        username: newUsername,
+                                                                    }),
+                                                                });
+                                                                const data = await response.json();
+                                                                if (data.success) {
+                                                                    setUsername(newUsername);
+                                                                    setIsEditingUsername(false);
+                                                                    toast.success('Username updated successfully!');
+                                                                } else {
+                                                                    toast.error(data.error || 'Failed to update username');
+                                                                }
+                                                            } catch (error) {
+                                                                toast.error('Failed to update username');
+                                                            } finally {
+                                                                setIsSavingUsername(false);
+                                                            }
+                                                        }}
+                                                        disabled={isSavingUsername}
+                                                        className="bg-[#98ee2c] text-black hover:bg-[#7bc922]"
+                                                    >
+                                                        {isSavingUsername ? (
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                                        ) : (
+                                                            <Check className="w-3 h-3" />
+                                                        )}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setIsEditingUsername(false);
+                                                            setNewUsername('');
+                                                        }}
+                                                        className="border-gray-600 text-gray-400 hover:bg-gray-800"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </Button>
+                                                </div>
+                                                <p className="text-xs text-gray-500">
+                                                    3-20 characters, letters, numbers, underscore, hyphen only
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm font-medium text-white">
+                                                {username || <span className="text-gray-500 italic">No username set</span>}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <div className="bg-[#151515] p-4 rounded-md mb-4">
                                         <p className="text-sm text-gray-400 mb-1">Hedera Account ID</p>
                                         <p className="text-sm font-mono break-all">
