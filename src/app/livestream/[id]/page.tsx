@@ -1,81 +1,88 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, Share2, Heart, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Users, Share2, Heart, MessageCircle, Copy, Key, Video as VideoIcon } from 'lucide-react';
 import Link from 'next/link';
 import { PlayerWithControls } from '@/components/stream/StreamPlayer';
 import { Src } from '@livepeer/react';
 import { toast } from 'sonner';
+import { useDAppConnector } from '@/components/client-providers';
 
 interface StreamData {
   id: string;
   playbackId: string;
   title: string;
   streamer: string;
+  streamerId?: string;
+  streamerAccountId?: string;
   game: string;
   viewerCount: number;
   isLive: boolean;
   description?: string;
   startedAt: string;
+  streamKey?: string;
+  rtmpUrl?: string;
 }
 
 export default function LivestreamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
+  const dAppContext = useDAppConnector();
+  const userAccountId = dAppContext?.userAccountId;
   const [stream, setStream] = useState<StreamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Array<{ id: string; text: string; sender: string; timestamp: number }>>([]);
 
+  const isOwner = stream && userAccountId && (stream.streamerAccountId === userAccountId);
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard!`);
+  };
+
   useEffect(() => {
-    // Load stream data
+    // Load stream data from API
     const loadStream = async () => {
       try {
-        // Try to load from localStorage first
-        const savedStreams = localStorage.getItem('hedera-streams');
-        if (savedStreams) {
-          const streams = JSON.parse(savedStreams);
-          const foundStream = streams.find((s: StreamData) => s.id === id);
+        const response = await fetch(`/api/livestream/${id}`);
+        const data = await response.json();
+
+        if (data.success && data.stream) {
+          setStream(data.stream);
+        } else {
+          // Fallback to mock data for demo
+          const mockStreams: StreamData[] = [
+            {
+              id: '1',
+              playbackId: 'f5eese9wwl7c7htl',
+              title: 'Chess Championship Finals - Epic Showdown!',
+              streamer: 'ProGamer123',
+              game: 'Chess',
+              viewerCount: 1234,
+              isLive: true,
+              description: 'Watch the most intense chess match of the year!',
+              startedAt: new Date().toISOString(),
+            },
+            {
+              id: '2',
+              playbackId: 'f5eese9wwl7c7htl',
+              title: 'Tetris Speed Run Challenge',
+              streamer: 'TetrisMaster',
+              game: 'Tetris',
+              viewerCount: 567,
+              isLive: true,
+              description: 'Attempting world record speed run',
+              startedAt: new Date(Date.now() - 3600000).toISOString(),
+            },
+          ];
+
+          const foundStream = mockStreams.find((s) => s.id === id);
           if (foundStream) {
             setStream(foundStream);
-            setLoading(false);
-            return;
           }
-        }
-
-        // Fallback to mock data for demo
-        const mockStreams: StreamData[] = [
-          {
-            id: '1',
-            playbackId: 'f5eese9wwl7c7htl',
-            title: 'Chess Championship Finals - Epic Showdown!',
-            streamer: 'ProGamer123',
-            game: 'Chess',
-            viewerCount: 1234,
-            isLive: true,
-            description: 'Watch the most intense chess match of the year!',
-            startedAt: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            playbackId: 'f5eese9wwl7c7htl',
-            title: 'Tetris Speed Run Challenge',
-            streamer: 'TetrisMaster',
-            game: 'Tetris',
-            viewerCount: 567,
-            isLive: true,
-            description: 'Attempting world record speed run',
-            startedAt: new Date(Date.now() - 3600000).toISOString(),
-          },
-        ];
-
-        const foundStream = mockStreams.find((s) => s.id === id);
-        if (foundStream) {
-          setStream(foundStream);
         }
       } catch (error) {
         console.error('Error loading stream:', error);
@@ -130,7 +137,7 @@ export default function LivestreamDetailPage({ params }: { params: Promise<{ id:
       <div className="min-h-screen bg-black pt-24 pb-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Stream Not Found</h1>
-          <p className="text-gray-400 mb-8">This stream doesn't exist or has been removed.</p>
+          <p className="text-gray-400 mb-8">This stream doesn&apos;t exist or has been removed.</p>
           <Link href="/livestream">
             <Button className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold">
               Back to Streams

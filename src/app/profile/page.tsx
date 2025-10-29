@@ -6,13 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { formatDistanceToNow } from "date-fns"
-import { Loader2, Trophy, History, Wallet, Gamepad, Calendar } from "lucide-react"
+import { Loader2, Trophy, History, Wallet, Gamepad, Calendar, Edit2, Check, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { HederaConnectButton } from "@/components/HederaConnectButton"
 import { useDAppConnector } from "@/components/client-providers"
 import { GameScoreCard } from "@/components/profile/GameScoreCard"
+import { toast } from "sonner"
 
 interface UserProfile {
     id: string
@@ -66,6 +69,10 @@ export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true)
     const [realmBalance, setRealmBalance] = useState<string>("0.00")
     const [isBalanceLoading, setIsBalanceLoading] = useState(false)
+    const [username, setUsername] = useState<string>("")
+    const [isEditingUsername, setIsEditingUsername] = useState(false)
+    const [newUsername, setNewUsername] = useState("")
+    const [isSavingUsername, setIsSavingUsername] = useState(false)
 
     // Fetch REALM token balance from API
     useEffect(() => {

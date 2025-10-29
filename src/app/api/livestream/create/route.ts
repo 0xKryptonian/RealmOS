@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LivepeerService } from '@/lib/streaming/livepeer-service';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,9 +14,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!streamer) {
+      return NextResponse.json(
+        { error: 'User account ID is required' },
+        { status: 400 }
+      );
+    }
+
     // Create stream using Livepeer
     const streamName = `${title} - ${game || 'Gaming'}`;
     const stream = await LivepeerService.createStream(streamName);
+
+    // Find or create user in database
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { walletAddress: streamer },
+        ],
+      },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          walletAddress: streamer,
+          name: streamer,
+        },
+      });
+    }
+
+    // Save stream to database
+    const streamingSession = await prisma.streamingSession.create({
+      data: {
+        userId: user.id,
+        streamId: stream.id,
+        streamKey: stream.streamKey,
+        playbackId: stream.playbackId || '',
+        rtmpUrl: 'rtmp://rtmp.livepeer.com/live',
+        title,
+        description: description || '',
+        game: game || 'Gaming',
+        status: 'SCHEDULED',
+        isLive: false,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -23,6 +65,7 @@ export async function POST(request: NextRequest) {
       streamKey: stream.streamKey,
       playbackId: stream.playbackId,
       rtmpUrl: 'rtmp://rtmp.livepeer.com/live',
+      dbId: streamingSession.id,
       message: 'Stream created successfully',
     });
   } catch (error) {

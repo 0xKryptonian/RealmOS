@@ -45,6 +45,7 @@ model User {
   marketplacePurchases MarketplacePurchase[]
   achievements  Achievement[]
   agentInteractions AgentInteraction[]
+  streamingSessions StreamingSession[]
 }
 
 model VerificationToken {
@@ -355,22 +356,31 @@ model TournamentPrize {
 model StreamingSession {
   id            String   @id @default(cuid())
   userId        String
-  streamId      String   // Livepeer stream ID
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  streamId      String   @unique // Livepeer stream ID
+  streamKey     String   // Livepeer stream key for OBS
   playbackId    String?  // Livepeer playback ID
+  rtmpUrl       String   @default("rtmp://rtmp.livepeer.com/live")
   title         String
   description   String?
+  game          String?
   gameId        String?
   eventId       String?  // Link to GameEvent
   status        String   // LIVE, ENDED, SCHEDULED
+  isLive        Boolean  @default(false)
   viewerCount   Int      @default(0)
   rewardPool    String?  // REALM tokens for viewers
   thumbnailUrl  String?
   startedAt     DateTime @default(now())
   endedAt       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
   @@index([userId])
   @@index([status])
   @@index([eventId])
+  @@index([streamId])
+  @@index([isLive])
 }
 
 // Guild System
