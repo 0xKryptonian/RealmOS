@@ -36,15 +36,51 @@ export default function CreateLivestreamPage() {
 
     setCreating(true);
     try {
-      // In production, this would call Livepeer API to create stream
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      toast.success('Stream created successfully!', {
-        description: 'You can now start broadcasting',
+      // Create stream using Livepeer API
+      const response = await fetch('/api/livestream/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          game: formData.game,
+          streamer: userAccountId,
+        }),
       });
 
-      router.push('/livestream');
+      if (!response.ok) {
+        throw new Error('Failed to create stream');
+      }
+
+      const data = await response.json();
+
+      // Save to localStorage for now
+      const savedStreams = localStorage.getItem('hedera-streams');
+      const streams = savedStreams ? JSON.parse(savedStreams) : [];
+      streams.push({
+        id: data.streamId,
+        playbackId: data.playbackId,
+        title: formData.title,
+        streamer: userAccountId,
+        game: formData.game || 'Gaming',
+        viewerCount: 0,
+        isLive: false,
+        description: formData.description,
+        startedAt: new Date().toISOString(),
+        streamKey: data.streamKey,
+      });
+      localStorage.setItem('hedera-streams', JSON.stringify(streams));
+
+      toast.success('Stream created successfully!', {
+        description: `Stream Key: ${data.streamKey.slice(0, 20)}...`,
+        duration: 5000,
+      });
+
+      router.push(`/livestream/${data.streamId}`);
     } catch (error) {
+      console.error('Error creating stream:', error);
       toast.error('Failed to create stream. Please try again.');
     } finally {
       setCreating(false);

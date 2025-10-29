@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Video, Users, Clock, TrendingUp, Radio } from 'lucide-react';
 import Link from 'next/link';
-import LivestreamPlayer from '@/components/stream/LivestreamPlayer';
 
 interface Stream {
   id: string;
@@ -19,12 +18,13 @@ interface Stream {
   isLive: boolean;
   thumbnailUrl?: string;
   startedAt: string;
+  description?: string;
 }
 
 const mockStreams: Stream[] = [
   {
     id: '1',
-    playbackId: 'demo-playback-id-1',
+    playbackId: 'f5eese9wwl7c7htl',
     title: 'Chess Championship Finals - Epic Showdown!',
     streamer: 'ProGamer123',
     game: 'Chess',
@@ -34,7 +34,7 @@ const mockStreams: Stream[] = [
   },
   {
     id: '2',
-    playbackId: 'demo-playback-id-2',
+    playbackId: 'f5eese9wwl7c7htl',
     title: 'Tetris Speed Run Challenge',
     streamer: 'TetrisMaster',
     game: 'Tetris',
@@ -46,6 +46,17 @@ const mockStreams: Stream[] = [
 
 export default function LivestreamPage() {
   const [selectedTab, setSelectedTab] = useState('live');
+  const [streams, setStreams] = useState<Stream[]>(mockStreams);
+
+  useEffect(() => {
+    // Load streams from localStorage
+    const savedStreams = localStorage.getItem('hedera-streams');
+    if (savedStreams) {
+      const parsedStreams = JSON.parse(savedStreams);
+      // Merge with mock streams
+      setStreams([...parsedStreams, ...mockStreams]);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-black pt-24 pb-20">
@@ -85,7 +96,7 @@ export default function LivestreamPage() {
                 <div>
                   <p className="text-sm text-gray-400">Live Now</p>
                   <p className="text-3xl font-bold text-[#98ee2c]">
-                    {mockStreams.filter((s) => s.isLive).length}
+                    {streams.filter((s) => s.isLive).length}
                   </p>
                 </div>
                 <Radio className="w-8 h-8 text-[#98ee2c]" />
@@ -99,7 +110,7 @@ export default function LivestreamPage() {
                 <div>
                   <p className="text-sm text-gray-400">Total Viewers</p>
                   <p className="text-3xl font-bold text-white">
-                    {mockStreams.reduce((acc, s) => acc + s.viewerCount, 0).toLocaleString()}
+                    {streams.reduce((acc, s) => acc + s.viewerCount, 0).toLocaleString()}
                   </p>
                 </div>
                 <Users className="w-8 h-8 text-[#98ee2c]" />
@@ -157,7 +168,7 @@ export default function LivestreamPage() {
 
           <TabsContent value="live">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {mockStreams
+              {streams
                 .filter((s) => s.isLive)
                 .map((stream) => (
                   <Link key={stream.id} href={`/livestream/${stream.id}`}>
@@ -197,7 +208,7 @@ export default function LivestreamPage() {
                 ))}
             </div>
 
-            {mockStreams.filter((s) => s.isLive).length === 0 && (
+            {streams.filter((s) => s.isLive).length === 0 && (
               <div className="text-center py-12">
                 <Radio className="w-16 h-16 mx-auto text-gray-600 mb-4" />
                 <h3 className="text-xl font-semibold mb-2 text-white">No live streams</h3>
