@@ -18,6 +18,7 @@ interface Stream {
   isLive: boolean;
   thumbnailUrl?: string;
   startedAt: string;
+  scheduledDate?: string;
   description?: string;
 }
 
@@ -52,18 +53,29 @@ export default function LivestreamPage() {
     // Load streams from API
     const loadStreams = async () => {
       try {
+        console.log('[LIVESTREAM PAGE] Fetching streams from API...');
         const response = await fetch('/api/livestream/list');
+        console.log('[LIVESTREAM PAGE] Response status:', response.status);
         const data = await response.json();
+        console.log('[LIVESTREAM PAGE] Response data:', data);
         
         if (data.success && data.streams) {
+          console.log('[LIVESTREAM PAGE] Loaded streams:', data.streams.length);
+          console.log('[LIVESTREAM PAGE] API streams data:', data.streams);
           // Merge API streams with mock streams
-          setStreams([...data.streams, ...mockStreams]);
+          const allStreams = [...data.streams, ...mockStreams];
+          console.log('[LIVESTREAM PAGE] Total streams (API + mock):', allStreams.length);
+          console.log('[LIVESTREAM PAGE] All streams:', allStreams);
+          console.log('[LIVESTREAM PAGE] Live streams:', allStreams.filter(s => s.isLive));
+          console.log('[LIVESTREAM PAGE] Non-live streams:', allStreams.filter(s => !s.isLive));
+          setStreams(allStreams);
         } else {
+          console.log('[LIVESTREAM PAGE] API failed, using mock streams only');
           // Fallback to mock streams only
           setStreams(mockStreams);
         }
       } catch (error) {
-        console.error('Error loading streams:', error);
+        console.error('[LIVESTREAM PAGE] Error loading streams:', error);
         // Fallback to mock streams
         setStreams(mockStreams);
       }
@@ -232,19 +244,89 @@ export default function LivestreamPage() {
           </TabsContent>
 
           <TabsContent value="upcoming">
-            <div className="text-center py-12">
-              <Clock className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No upcoming streams</h3>
-              <p className="text-gray-400">Schedule a stream to appear here</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {streams
+                .filter((s) => s.scheduledDate && new Date(s.scheduledDate) > new Date() && !s.isLive)
+                .map((stream) => (
+                  <Link key={stream.id} href={`/livestream/${stream.id}`}>
+                    <Card className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all overflow-hidden cursor-pointer">
+                      <div className="relative aspect-video bg-gradient-to-br from-[#98ee2c]/20 to-[#7bc922]/10">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Clock className="w-16 h-16 text-[#98ee2c]/30" />
+                        </div>
+                        <div className="absolute top-3 left-3">
+                          <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                            SCHEDULED
+                          </span>
+                        </div>
+                        <div className="absolute bottom-3 right-3 flex items-center gap-2 text-white text-sm">
+                          <Clock className="w-4 h-4" />
+                          <span>{new Date(stream.scheduledDate!).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <CardHeader>
+                        <CardTitle className="text-white group-hover:text-[#98ee2c] transition-colors">
+                          {stream.title}
+                        </CardTitle>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">{stream.streamer}</span>
+                          <span className="text-[#98ee2c]">{stream.game}</span>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
             </div>
+
+            {streams.filter((s) => s.scheduledDate && new Date(s.scheduledDate) > new Date() && !s.isLive).length === 0 && (
+              <div className="text-center py-12">
+                <Clock className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">No upcoming streams</h3>
+                <p className="text-gray-400">Schedule a stream to appear here</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="past">
-            <div className="text-center py-12">
-              <Video className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No past streams</h3>
-              <p className="text-gray-400">Stream recordings will appear here</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {streams
+                .filter((s) => !s.isLive && (!s.scheduledDate || new Date(s.scheduledDate) <= new Date()))
+                .map((stream) => (
+                  <Link key={stream.id} href={`/livestream/${stream.id}`}>
+                    <Card className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all overflow-hidden cursor-pointer">
+                      <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Video className="w-16 h-16 text-gray-600" />
+                        </div>
+                        <div className="absolute bottom-3 right-3 flex items-center gap-2 text-white text-sm bg-black/50 px-2 py-1 rounded">
+                          <Users className="w-4 h-4" />
+                          <span>{stream.viewerCount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <CardHeader>
+                        <CardTitle className="text-white group-hover:text-[#98ee2c] transition-colors">
+                          {stream.title}
+                        </CardTitle>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">{stream.streamer}</span>
+                          <span className="text-[#98ee2c]">{stream.game}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {new Date(stream.startedAt).toLocaleDateString()} at {new Date(stream.startedAt).toLocaleTimeString()}
+                        </p>
+                      </CardHeader>
+                    </Card>
+                  </Link>
+                ))}
             </div>
+
+            {streams.filter((s) => !s.isLive && (!s.scheduledDate || new Date(s.scheduledDate) <= new Date())).length === 0 && (
+              <div className="text-center py-12">
+                <Video className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">No past streams</h3>
+                <p className="text-gray-400">Stream recordings will appear here</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

@@ -368,6 +368,7 @@ model StreamingSession {
   eventId       String?  // Link to GameEvent
   status        String   // LIVE, ENDED, SCHEDULED
   isLive        Boolean  @default(false)
+  scheduledDate DateTime?
   viewerCount   Int      @default(0)
   rewardPool    String?  // REALM tokens for viewers
   thumbnailUrl  String?

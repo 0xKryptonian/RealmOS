@@ -19,6 +19,9 @@ export default function CreateLivestreamPage() {
     title: '',
     description: '',
     game: '',
+    scheduledDate: '',
+    scheduledTime: '',
+    isScheduled: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +50,9 @@ export default function CreateLivestreamPage() {
           description: formData.description,
           game: formData.game,
           streamer: userAccountId,
+          scheduledDate: formData.isScheduled && formData.scheduledDate && formData.scheduledTime
+            ? new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toISOString()
+            : null,
         }),
       });
 
@@ -162,6 +168,66 @@ export default function CreateLivestreamPage() {
                   className="w-full min-h-[120px] px-3 py-2 bg-white/5 border border-white/10 rounded-md text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#98ee2c]/50"
                   rows={4}
                 />
+              </div>
+
+              {/* Schedule Stream Option */}
+              <div className="space-y-4 border-t border-white/10 pt-6">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="isScheduled"
+                    checked={formData.isScheduled}
+                    onChange={(e) => setFormData({ ...formData, isScheduled: e.target.checked })}
+                    className="w-4 h-4 rounded border-white/10 bg-white/5 text-[#98ee2c] focus:ring-[#98ee2c]/50"
+                  />
+                  <Label htmlFor="isScheduled" className="text-white cursor-pointer">
+                    Schedule stream for later
+                  </Label>
+                </div>
+
+                {formData.isScheduled && (
+                  <div className="grid grid-cols-2 gap-4 pl-7">
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduledDate" className="text-white text-sm">
+                        Date
+                      </Label>
+                      <Input
+                        id="scheduledDate"
+                        type="date"
+                        value={formData.scheduledDate}
+                        onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="bg-white/5 border-white/10 text-white"
+                        required={formData.isScheduled}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduledTime" className="text-white text-sm">
+                        Time
+                      </Label>
+                      <Input
+                        id="scheduledTime"
+                        type="time"
+                        value={formData.scheduledTime}
+                        onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                        className="bg-white/5 border-white/10 text-white"
+                        required={formData.isScheduled}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-gray-400">
+                        {formData.scheduledDate && formData.scheduledTime && (
+                          <>
+                            Stream scheduled for:{' '}
+                            <span className="text-[#98ee2c]">
+                              {new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toLocaleString()}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="bg-[#98ee2c]/10 border border-[#98ee2c]/30 rounded-lg p-4">
