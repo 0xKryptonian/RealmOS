@@ -1,4 +1,4 @@
-import { GameSpec } from '@/types/game-spec';
+import { GameSpec } from '../../types/game-spec';
 
 /**
  * Phaser.js Puzzle Game Template (Match-3 / Block Matching)

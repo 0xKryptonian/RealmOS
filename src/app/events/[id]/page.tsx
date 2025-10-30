@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { BsArrowLeft } from "react-icons/bs";
 import { BiChat, BiHeart, BiShare } from "react-icons/bi";
-import { useAccount } from "wagmi";
+import { useDAppConnector } from "@/components/client-providers";
+
 // Message type definition
 interface ChatMessage {
     id: string;
@@ -18,9 +19,9 @@ interface ChatMessage {
 const events = [
     {
         id: "1",
-        title: "Gaming Trends on Core Blockchain",
-        description: "Join us for an exciting discussion about the latest gaming trends on Core Blockchain.",
-        date: "March 20",
+        title: "Gaming Trends on Hedera Blockchain",
+        description: "Join us for an exciting discussion about the latest gaming trends on Hedera Blockchain.",
+        date: "Nov 5",
         time: "6:00PM",
         playbackId: "f5eese9wwl7c7htl",
         thumbnail: "/images/portals.png",
@@ -31,7 +32,7 @@ const events = [
         id: "2",
         title: "Tutorial: How to play Umi's Friends and setup account",
         description: "Learn how to get started with Umi's Friends and set up your gaming account.",
-        date: "March 26",
+        date: "Nov 26",
         time: "6:00PM",
         playbackId: "f5eese9wwl7c7htl",
         thumbnail: "/images/howtoplayumi.jpeg",
@@ -42,7 +43,7 @@ const events = [
         id: "3",
         title: "Update: CyberPet introduces new skins and muchmore!",
         description: "Discover the latest updates to CyberPet including new skins and exciting features.",
-        date: "March 27",
+        date: "Nov 15",
         time: "6:00PM",
         playbackId: "f5eese9wwl7c7htl",
         thumbnail: "/images/Cyberpet.png",
@@ -53,14 +54,13 @@ const events = [
 
 export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const { address } = useAccount();
+    const { userAccountId } = useDAppConnector() ?? {};
+
     const event = events.find(e => e.id === id);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
-    // Mock wallet address - in a real app, this would come from your authentication system
-    const userWalletAddress = address
 
     // Load messages from localStorage on component mount
     useEffect(() => {

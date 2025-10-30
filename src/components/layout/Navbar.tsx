@@ -197,7 +197,7 @@ export function Navbar() {
                           {item.items.map((subItem) => {
                             const SubIcon = subItem.icon;
                             return (
-                              <DropdownMenuItem key={subItem.href} asChild>
+                              <DropdownMenuItem key={`${subItem.href}-${subItem.name}`} asChild>
                                 <Link href={subItem.href} className={dropdownItemClasses}>
                                   <SubIcon className="h-4 w-4" />
                                   <span>{subItem.name}</span>
@@ -228,7 +228,7 @@ export function Navbar() {
                       {item.items.map((subItem) => {
                         const SubIcon = subItem.icon;
                         return (
-                          <DropdownMenuItem key={subItem.href} asChild>
+                          <DropdownMenuItem key={`${subItem.href}-${subItem.name}`} asChild>
                             <Link href={subItem.href} className={dropdownItemClasses}>
                               <SubIcon className="h-4 w-4" />
                               <span>{subItem.name}</span>
@@ -350,7 +350,7 @@ export function Navbar() {
                       const isActive = pathname === subItem.href;
                       return (
                         <Link
-                          key={subItem.href}
+                          key={`${subItem.href}-${subItem.name}`}
                           href={subItem.href}
                           className={`flex items-center space-x-2 px-3 py-2 pl-9 rounded-lg text-sm ${
                             isActive

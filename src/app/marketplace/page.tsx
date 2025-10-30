@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Input } from '../../components/ui/input';
+import { Badge } from '../../components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { Search, Filter, TrendingUp, Clock, Tag } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDAppConnector } from '@/components/client-providers';
+import { useDAppConnector } from '../../components/client-providers';
 
 interface NFTListing {
   id: string;
@@ -72,8 +72,42 @@ export default function MarketplacePage() {
       return;
     }
 
-    toast.info('Purchase feature coming soon!');
-    // TODO: Implement purchase flow
+    const listing = listings.find(l => l.id === listingId);
+    if (!listing) {
+      toast.error('Listing not found');
+      return;
+    }
+
+    try {
+      toast.loading('Processing purchase...', { id: 'purchase' });
+
+      const response = await fetch('/api/marketplace/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listingId,
+          buyerAccountId: userAccountId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Purchase failed');
+      }
+
+      const data = await response.json();
+      
+      toast.success('Purchase successful!', {
+        id: 'purchase',
+        description: `You now own ${listing.nft.metadata?.name || 'this NFT'}`,
+      });
+
+      // Refresh listings
+      fetchListings();
+    } catch (error: any) {
+      console.error('Purchase error:', error);
+      toast.error(error.message || 'Failed to complete purchase', { id: 'purchase' });
+    }
   };
 
   const filteredListings = listings.filter((listing) =>

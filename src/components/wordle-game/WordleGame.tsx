@@ -496,17 +496,32 @@ const GameBoard: React.FC = () => {
     );
 };
 
-// Main App Component
-const WordleGame: React.FC<{
+// Props interface
+interface WordleGameProps {
     gameWords?: string[];
     validWords?: string[];
-}> = ({ gameWords: propGameWords, validWords: propValidWords }) => {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
+
+// Main App Component
+const WordleGame: React.FC<WordleGameProps> = ({ 
+    gameWords: propGameWords, 
+    validWords: propValidWords,
+    onGameEnd,
+    submitting 
+}) => {
     // Use the props if provided, otherwise use the imported values
     const gameWordsToUse = propGameWords || gameWords;
     const validWordsToUse = propValidWords || validWords;
 
     return (
-        <GameProvider gameWords={gameWordsToUse} validWords={validWordsToUse}>
+        <GameProvider 
+            gameWords={gameWordsToUse} 
+            validWords={validWordsToUse}
+            onGameEnd={onGameEnd}
+            submitting={submitting}
+        >
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
                 <div className="container mx-auto px-4 py-8 flex flex-col items-center relative">
                     <InstructionsModal />

@@ -11,11 +11,16 @@ import { Separator } from "@/components/ui";
 import GameProvider from "./SudokoProvider";
 import { SudokuBoard, NumberControls, GameControls, GameStatus, DifficultySelector, KeyboardShortcutsHelp } from "./SudokoComponents";
 
+// Props interface for blockchain integration
+interface SudokuGameProps {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
 
 // Main component
-const SudokuGame = () => {
+const SudokuGame: React.FC<SudokuGameProps> = ({ onGameEnd, submitting } = {}) => {
     return (
-        <GameProvider>
+        <GameProvider onGameEnd={onGameEnd} submitting={submitting}>
             <div className="flex flex-col items-center justify-center min-h-screen p-4 text-foreground">
                 <Card className="w-full max-w-md shadow-lg relative">
                     <KeyboardShortcutsHelp />

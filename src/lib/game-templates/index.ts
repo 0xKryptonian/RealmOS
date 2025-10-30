@@ -1,4 +1,4 @@
-import { GameSpec } from '@/types/game-spec';
+import { GameSpec } from '../../types/game-spec';
 import { generateShooterGame } from './shooter-template';
 import { generatePlatformerGame } from './platformer-template';
 import { generatePuzzleGame } from './puzzle-template';

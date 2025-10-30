@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { WordleGame } from '@/components/wordle-game';
-import Link from 'next/link';
-import { BsArrowLeft } from 'react-icons/bs';
+import { GameWrapper } from '@/components/game-wrapper';
 import gameWords from '@/data/words.json';
 import validWords from '@/data/validWords.json';
 
@@ -23,22 +22,10 @@ import validWords from '@/data/validWords.json';
 
 export default function WordlePage() {
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="container mx-auto px-4 py-6">
-                <Link
-                    href="/games"
-                    className="inline-flex items-center text-blue-500 hover:text-blue-700 mb-6"
-                >
-                    <BsArrowLeft className="mr-2" /> Back to Games
-                </Link>
-
-                <div className="max-w-4xl mx-auto">
-                    <h1 className="text-3xl font-bold mb-6 text-center">Wordle Game</h1>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-                        <WordleGame />
-                    </div>
-                </div>
-            </div>
-        </div>
+        <GameWrapper gameId="wordle" gameName="Wordle">
+            {({ onGameEnd, submitting }) => (
+                <WordleGame onGameEnd={onGameEnd} submitting={submitting} />
+            )}
+        </GameWrapper>
     );
 }

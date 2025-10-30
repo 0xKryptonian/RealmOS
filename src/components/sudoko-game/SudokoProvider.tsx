@@ -14,8 +14,15 @@ export const useGame = () => {
     return context;
 };
 
+// Props interface for blockchain integration
+interface GameProviderProps {
+    children: React.ReactNode;
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
+
 // Game Provider component
-const GameProvider = ({ children }: { children: React.ReactNode }) => {
+const GameProvider = ({ children, onGameEnd, submitting }: GameProviderProps) => {
     const [board, setBoard] = useState<BoardType>(Array(9).fill(null).map(() => Array(9).fill(null)));
     const [originalBoard, setOriginalBoard] = useState<BoardType>(Array(9).fill(null).map(() => Array(9).fill(null)));
     const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
@@ -246,6 +253,16 @@ const GameProvider = ({ children }: { children: React.ReactNode }) => {
                 toast.success("Congratulations!", {
                     description: `You've completed the puzzle! Your score: ${score}`,
                 });
+
+                // Submit score to blockchain if callback provided
+                if (onGameEnd && !submitting) {
+                    onGameEnd(score, {
+                        difficulty,
+                        time: timer,
+                        mistakes,
+                        hintsUsed,
+                    }).catch(err => console.error('Failed to submit sudoku score:', err));
+                }
             }
         }
     };

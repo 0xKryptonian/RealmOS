@@ -1,4 +1,4 @@
-import { GameSpec } from '@/types/game-spec';
+import { GameSpec } from '../../types/game-spec';
 
 /**
  * Phaser.js Card Game Template (Memory Match / Concentration)

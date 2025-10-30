@@ -6,12 +6,6 @@ import { LetterState, GameStatus, WordleState, UserStats, WordDefinition, GameCo
 // Create context
 export const GameContext = createContext<GameContextType>({} as GameContextType);
 
-interface GameProviderProps {
-    children: ReactNode;
-    gameWords: string[];    // words.json - Words used as Wordle answers
-    validWords: string[];   // validWords.json - All valid 5-letter dictionary words
-}
-
 
 // Initial game state
 const initialGameState: WordleState = {
@@ -37,9 +31,11 @@ interface GameProviderProps {
     children: ReactNode;
     gameWords: string[]; // Words from JSON file
     validWords: string[]; // Valid words from JSON file
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
 }
 
-export const GameProvider: React.FC<GameProviderProps> = ({ children, gameWords, validWords }) => {
+export const GameProvider: React.FC<GameProviderProps> = ({ children, gameWords, validWords, onGameEnd, submitting }) => {
     // State
     const [gameState, setGameState] = useState<WordleState>(() => {
         const savedState = localStorage.getItem('wordleGameState');
@@ -158,9 +154,28 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, gameWords,
         if (guess === gameState.dailyWord) {
             newGameStatus = 'won';
             updateStats(newCurrentRow);
+            
+            // Submit score to blockchain if callback provided
+            if (onGameEnd && !submitting) {
+                const score = (7 - newCurrentRow) * 100; // Max 600 points
+                onGameEnd(score, {
+                    won: true,
+                    attempts: newCurrentRow,
+                    word: gameState.dailyWord,
+                }).catch((err: Error) => console.error('Failed to submit wordle score:', err));
+            }
         } else if (newCurrentRow >= 6) {
             newGameStatus = 'lost';
             updateStats(0);
+            
+            // Submit score to blockchain if callback provided
+            if (onGameEnd && !submitting) {
+                onGameEnd(0, {
+                    won: false,
+                    attempts: 6,
+                    word: gameState.dailyWord,
+                }).catch((err: Error) => console.error('Failed to submit wordle score:', err));
+            }
         }
 
         // Update game state

@@ -1,14 +1,16 @@
-import SnakesAndLaddersGame from '@/components/snake-game';
-import { SnakeGameWrapper } from '@/components/snake-game/SnakeComponents';
+'use client';
+
 import React from 'react';
+import SnakesAndLaddersGame from '@/components/snake-game';
+import { GameWrapper } from '@/components/game-wrapper';
 
 const SnakeLadderGame = () => {
     return (
-        <div className='flex justify-center items-center'>
-            <SnakeGameWrapper>
-                <SnakesAndLaddersGame />
-            </SnakeGameWrapper>
-        </div>
+        <GameWrapper gameId="snake-ladder" gameName="Snake & Ladder">
+            {({ onGameEnd, submitting }) => (
+                <SnakesAndLaddersGame onGameEnd={onGameEnd} submitting={submitting} />
+            )}
+        </GameWrapper>
     );
 };
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { ChatMessage } from '@/shared/types';
+import { ChatMessage } from '../../shared/types';
 import { useState } from 'react';
-import { useHandleChat } from '@/lib/handle-chat';
-import { ChatInput } from '@/components/chat-input';
-import { Header } from '@/components/header';
-import { useDAppConnector } from '@/components/client-providers';
-import { Chat } from '@/components/chat';
+import { useHandleChat } from '../../lib/handle-chat';
+import { ChatInput } from '../../components/chat-input';
+import { Header } from '../../components/header';
+import { useDAppConnector } from '../../components/client-providers';
+import { Chat } from '../../components/chat';
 
 export default function ChatPage() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);

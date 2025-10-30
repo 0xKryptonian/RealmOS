@@ -536,14 +536,20 @@ function initializeGame(words: Word[]): GameState {
     };
 }
 
+// Props interface for blockchain integration
+interface CryptoCrosswordProps {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
+
 // Main Component
-function CryptoCrossword() {
+function CryptoCrossword({ onGameEnd, submitting }: CryptoCrosswordProps = {}) {
     const [keyboardMode, setKeyboardMode] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const [timerActive, setTimerActive] = useState(true);
 
     return (
-        <GameProvider>
+        <GameProvider onGameEnd={onGameEnd} submitting={submitting}>
             <div className="container mx-auto py-8 px-4">
                 <Card className="mb-6">
                     <CardHeader>

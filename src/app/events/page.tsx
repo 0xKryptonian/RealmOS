@@ -53,7 +53,7 @@ const explore = () => {
                                         <BiHeart className="text-xl text-gray-400 hover:text-[#98ee2c] cursor-pointer" />
                                     </div>
                                 </div>
-                                <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Gaming Trends on Core Blockchain</h2>
+                                <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Gaming Trends on Hedera Blockchain</h2>
                                 <Link
                                     href="/events/1"
                                     className="flex items-center bg-[#98ee2c] text-black px-4 py-2 rounded font-bold hover:bg-[#7bc922] transition-colors"

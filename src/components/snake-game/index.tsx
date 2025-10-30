@@ -3,9 +3,14 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { GameBoard, DiceComponent, GameStatus, GameControls, WinModal } from './SnakeComponents';
 import { toast, Toaster } from "sonner";
 
+// Props interface for blockchain integration
+interface SnakesAndLaddersGameProps {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
 
 // Main Game Component
-const SnakesAndLaddersGame = () => {
+const SnakesAndLaddersGame: React.FC<SnakesAndLaddersGameProps> = ({ onGameEnd, submitting } = {}) => {
     const [playerPosition, setPlayerPosition] = useState(1);
     const [diceValue, setDiceValue] = useState(0);
     const [isRolling, setIsRolling] = useState(false);
@@ -49,13 +54,28 @@ const SnakesAndLaddersGame = () => {
         return () => clearInterval(interval);
     }, [isTimerRunning]);
 
-    // Initialize Game
+    // Check win condition
     useEffect(() => {
-        if (playerPosition === 1 && moves === 0) {
-            setIsTimerRunning(false);
-            setGameTime(0);
-        } else if (playerPosition > 1 && !gameWon) {
-            setIsTimerRunning(true);
+        if (playerPosition >= 100 && !gameWon) {
+            toast.success("Congratulations! You won! 🎉", {
+                description: `You completed the game in ${moves} moves and ${gameTime} seconds!`,
+                duration: 5000,
+            });
+            
+            // Calculate score: position reached * 10 + bonus for speed and efficiency
+            const positionScore = 1000; // Reached 100
+            const moveBonus = Math.max(0, 500 - (moves * 10)); // Fewer moves = higher bonus
+            const timeBonus = Math.max(0, 300 - gameTime); // Faster = higher bonus
+            const finalScore = Math.floor(positionScore + moveBonus + timeBonus);
+            
+            // Submit score to blockchain if callback provided
+            if (onGameEnd && !submitting) {
+                onGameEnd(finalScore, {
+                    position: 100,
+                    moves,
+                    time: gameTime,
+                }).catch((err: Error) => console.error('Failed to submit snake & ladder score:', err));
+            }
         }
 
         if (playerPosition >= 100) {
@@ -63,7 +83,7 @@ const SnakesAndLaddersGame = () => {
             setGameWon(true);
             setIsTimerRunning(false);
         }
-    }, [playerPosition, moves, gameWon]);
+    }, [playerPosition, moves, gameWon, gameTime, onGameEnd, submitting]);
 
     // Calculate a helpful path to show (simplified version)
     useEffect(() => {

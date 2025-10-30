@@ -563,10 +563,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
 
         case 'END_GAME': {
+            const endTime = Date.now();
+            const timeTaken = Math.floor((endTime - state.startTime) / 1000); // seconds
+            const completedWords = state.completedWords.length;
+            const totalWords = state.words.length;
+            const accuracy = totalWords > 0 ? (completedWords / totalWords) * 100 : 0;
+            
+            // Calculate score: completed words * 50 + time bonus
+            const baseScore = completedWords * 50;
+            const timeBonus = Math.max(0, 500 - timeTaken); // Bonus for speed
+            const finalScore = Math.floor(baseScore + timeBonus);
+
             return {
                 ...state,
-                endTime: Date.now(),
-                isComplete: true
+                endTime,
+                isComplete: true,
+                score: finalScore
             };
         }
 
@@ -686,10 +698,26 @@ function initializeGame(words: Word[]): GameState {
 interface GameProviderProps {
     children: ReactNode;
     initialWords?: Word[];
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
 }
 
-export function GameProvider({ children, initialWords = crosswordData }: GameProviderProps) {
+export function GameProvider({ children, initialWords = crosswordData, onGameEnd, submitting }: GameProviderProps) {
     const [state, dispatch] = useReducer(gameReducer, initialWords, initializeGame);
+
+    // Submit score when game completes
+    React.useEffect(() => {
+        if (state.isComplete && onGameEnd && !submitting) {
+            const timeTaken = state.endTime ? Math.floor((state.endTime - state.startTime) / 1000) : 0;
+            onGameEnd(state.score, {
+                completedWords: state.completedWords.length,
+                totalWords: state.words.length,
+                timeTaken,
+                hintsUsed: 3 - state.hints,
+                moves: state.moves,
+            }).catch((err: Error) => console.error('Failed to submit crossword score:', err));
+        }
+    }, [state.isComplete, state.score, onGameEnd, submitting]);
 
     return (
         <GameContext.Provider value={{ state, dispatch }}>

@@ -43,15 +43,14 @@ export function GameWrapper({ gameId, gameName, children }: GameWrapperProps) {
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Header with Balance */}
-      <div className="flex items-center justify-between mb-6">
+      {/* <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">{gameName}</h1>
           <p className="text-muted-foreground">
             Play and earn REALM tokens for high scores
           </p>
         </div>
-        {userAccountId}
-      </div>
+      </div> */}
 
       {/* Connect Wallet Prompt */}
       {showConnectPrompt && (

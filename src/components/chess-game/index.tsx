@@ -71,8 +71,14 @@ interface ChessGameAppState {
     opponent: string;
 }
 
+// Props interface for blockchain integration
+interface ChessGameAppProps {
+    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    submitting?: boolean;
+}
+
 // 1. MAIN GAME COMPONENT
-const ChessGameApp: React.FC = () => {
+const ChessGameApp: React.FC<ChessGameAppProps> = ({ onGameEnd, submitting } = {}) => {
     // State initialization
     const [game, setGame] = useState<Chess>(new Chess());
     const [fen, setFen] = useState<string>('');
@@ -300,13 +306,26 @@ const ChessGameApp: React.FC = () => {
                 } else {
                     toast.info('Draw!', { description: result });
                 }
+
+                // Submit score to blockchain if callback provided
+                if (onGameEnd && !submitting) {
+                    const isPlayerWinner = gameStatus.winner === playerColor;
+                    const score = isPlayerWinner ? 1000 : (gameStatus.winner ? 0 : 500); // Win: 1000, Loss: 0, Draw: 500
+                    onGameEnd(score, {
+                        result: gameStatus.reason,
+                        winner: gameStatus.winner,
+                        moves: moveHistory.length,
+                        playerColor,
+                        timeRemaining: playerColor === 'w' ? playerTime : aiTime,
+                    }).catch(err => console.error('Failed to submit chess score:', err));
+                }
             }, 500);
 
             return true;
         }
 
         return false;
-    }, [game, playerColor, result, gameStatus]);
+    }, [game, playerColor, result, gameStatus, onGameEnd, submitting, moveHistory.length, playerTime, aiTime]);
 
     // Update game state after a move
     const updateGameState = () => {
