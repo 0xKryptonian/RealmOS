@@ -5,36 +5,50 @@ import { getRewardService } from '@/lib/hedera/rewards';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { rewardId, userId } = body;
+    const { transactionId, userId } = body;
 
-    if (!rewardId) {
+    if (!transactionId || !userId) {
       return NextResponse.json(
-        { error: 'rewardId is required' },
+        { error: 'transactionId and userId are required' },
         { status: 400 }
       );
     }
 
-    // Get reward
-    const reward = await prisma.reward.findUnique({
-      where: { id: rewardId },
+    // Get pending reward transaction
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
       include: { user: true },
     });
 
-    if (!reward) {
+    if (!transaction) {
       return NextResponse.json(
-        { error: 'Reward not found' },
+        { error: 'Transaction not found' },
         { status: 404 }
       );
     }
 
-    if (reward.status !== 'PENDING') {
+    if (transaction.type !== 'REWARD') {
+      return NextResponse.json(
+        { error: 'Transaction is not a reward' },
+        { status: 400 }
+      );
+    }
+
+    if (transaction.status !== 'PENDING') {
       return NextResponse.json(
         { error: 'Reward already claimed or failed' },
         { status: 400 }
       );
     }
 
-    if (!reward.user.hederaAccountId) {
+    if (transaction.userId !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    if (!transaction.user.hederaAccountId) {
       return NextResponse.json(
         { error: 'User does not have a Hedera account linked' },
         { status: 400 }
@@ -45,27 +59,26 @@ export async function POST(request: NextRequest) {
     try {
       const rewardService = getRewardService();
       const result = await rewardService.distributeReward(
-        reward.user.hederaAccountId,
-        reward.amount,
-        reward.reason
+        transaction.user.hederaAccountId,
+        transaction.amount,
+        transaction.description || 'Reward claim'
       );
 
-      // Update reward status
-      const updatedReward = await prisma.reward.update({
-        where: { id: rewardId },
+      // Update transaction status
+      const updatedTransaction = await prisma.transaction.update({
+        where: { id: transactionId },
         data: {
-          status: 'CLAIMED',
+          status: 'COMPLETED',
           txHash: result.txId,
-          claimedAt: new Date(),
         },
       });
 
       // Update user balance
       await prisma.user.update({
-        where: { id: reward.userId },
+        where: { id: userId },
         data: {
           realmBalance: {
-            increment: reward.amount,
+            increment: transaction.amount,
           },
         },
       });
@@ -73,14 +86,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          reward: updatedReward,
+          transaction: updatedTransaction,
           txId: result.txId,
         },
       });
     } catch (error: unknown) {
-      // Mark reward as failed
-      await prisma.reward.update({
-        where: { id: rewardId },
+      // Mark transaction as failed
+      await prisma.transaction.update({
+        where: { id: transactionId },
         data: { status: 'FAILED' },
       });
 

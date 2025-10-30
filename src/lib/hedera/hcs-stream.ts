@@ -1,4 +1,4 @@
-import { TopicId, TopicMessageQuery } from '@hashgraph/sdk';
+import { TopicId, TopicMessageQuery, TopicMessage } from '@hashgraph/sdk';
 import { HederaClient } from './client';
 
 export interface HCSMessage {
@@ -14,14 +14,14 @@ export interface LeaderboardScore {
   gameId: string;
   score: number;
   timestamp: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface GameEvent {
   eventType: string;
   userId: string;
   gameId: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -41,7 +41,7 @@ export interface TournamentResult {
  */
 export class HCSStreamService {
   private client = HederaClient.getClient();
-  private subscriptions: Map<string, any> = new Map();
+  private subscriptions: Map<string, { unsubscribe: () => void }> = new Map();
 
   /**
    * Subscribe to leaderboard updates
@@ -176,21 +176,24 @@ export class HCSStreamService {
         .setStartTime(0)
         .setLimit(limit);
 
-      query.subscribe(
-        this.client,
-        null,
-        (message) => {
-          messages.push({
-            consensusTimestamp: message.consensusTimestamp.toString(),
-            sequenceNumber: message.sequenceNumber.toNumber(),
-            contents: Buffer.from(message.contents).toString('utf-8'),
-            runningHash: message.runningHash,
-          });
-        },
-        (error) => {
-          reject(error);
-        }
-      );
+      try {
+        query.subscribe(
+          this.client,
+          null,
+          (message: TopicMessage | null) => {
+            if (!message) return;
+            messages.push({
+              consensusTimestamp: message.consensusTimestamp.toString(),
+              sequenceNumber: message.sequenceNumber.toNumber(),
+              contents: Buffer.from(message.contents).toString('utf-8'),
+              runningHash: message.runningHash,
+            });
+          },
+        );
+      } catch (err) {
+        reject(err as Error);
+        return;
+      }
 
       // Wait for messages to be collected
       setTimeout(() => {

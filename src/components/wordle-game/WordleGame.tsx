@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
-import { Check, Info, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import {
     Button,
     Card,
@@ -95,14 +95,7 @@ const GameProvider: React.FC<{
     const gameWordsToUse = propGameWords || gameWords;
     const validWordsToUse = propValidWords || validWords;
 
-    // Update the WORD_LIST to use the provided gameWords
-    const WORD_LIST = gameWordsToUse || [
-        'react', 'state', 'props', 'hooks', 'redux',
-        'query', 'build', 'shade', 'music', 'light',
-        'games', 'tower', 'audio', 'piano', 'dream',
-        'cloud', 'brain', 'plant', 'earth', 'water',
-        'frame', 'point', 'swift', 'style', 'modal'
-    ];
+    // Answers list derives from props or imported list; top-level WORD_LIST is used as fallback where needed
 
     useEffect(() => {
         // Check if we're in a browser environment
@@ -177,7 +170,7 @@ const GameProvider: React.FC<{
             if (gameState.currentGuess.length !== 5) return;
 
             // Check if the word is a valid word from our list
-            const validWordsList = validWordsToUse || WORD_LIST;
+            const validWordsList = validWordsToUse || gameWordsToUse || WORD_LIST;
             if (!validWordsList.includes(gameState.currentGuess.toLowerCase())) {
                 // In a real app, you'd show a toast/alert here
                 console.log('Not a valid word');
@@ -209,7 +202,7 @@ const GameProvider: React.FC<{
                 currentGuess: prev.currentGuess + key.toLowerCase()
             }));
         }
-    }, [gameState, updateLetterStates, validWordsToUse]);
+    }, [gameState, updateLetterStates, validWordsToUse, gameWordsToUse]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -500,7 +493,7 @@ const GameBoard: React.FC = () => {
 interface WordleGameProps {
     gameWords?: string[];
     validWords?: string[];
-    onGameEnd?: (score: number, metadata?: any) => Promise<void>;
+    onGameEnd?: (score: number, metadata?: Record<string, unknown>) => Promise<void>;
     submitting?: boolean;
 }
 
@@ -508,8 +501,6 @@ interface WordleGameProps {
 const WordleGame: React.FC<WordleGameProps> = ({ 
     gameWords: propGameWords, 
     validWords: propValidWords,
-    onGameEnd,
-    submitting 
 }) => {
     // Use the props if provided, otherwise use the imported values
     const gameWordsToUse = propGameWords || gameWords;
@@ -519,8 +510,6 @@ const WordleGame: React.FC<WordleGameProps> = ({
         <GameProvider 
             gameWords={gameWordsToUse} 
             validWords={validWordsToUse}
-            onGameEnd={onGameEnd}
-            submitting={submitting}
         >
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
                 <div className="container mx-auto px-4 py-8 flex flex-col items-center relative">

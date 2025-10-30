@@ -13,38 +13,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create reward
-    const reward = await prisma.reward.create({
+    // Create pending reward transaction (tracked via Transaction model)
+    const transaction = await prisma.transaction.create({
       data: {
         userId,
-        amount,
-        reason,
+        type: 'REWARD',
+        amount: Number(amount),
+        tokenSymbol: 'REALM',
         status: 'PENDING',
+        description: String(reason),
       },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
     // Auto-distribute if requested and user has Hedera account
-    if (autoDistribute && reward.user.hederaAccountId) {
+    if (autoDistribute && transaction.user?.hederaAccountId) {
       try {
         const { getRewardService } = await import('@/lib/hedera/rewards');
         const rewardService = getRewardService();
         
         const result = await rewardService.distributeReward(
-          reward.user.hederaAccountId,
-          amount,
-          reason
+          transaction.user.hederaAccountId,
+          Number(amount),
+          String(reason)
         );
 
-        // Update reward
-        const updatedReward = await prisma.reward.update({
-          where: { id: reward.id },
+        // Mark transaction as completed with tx hash
+        const updatedTransaction = await prisma.transaction.update({
+          where: { id: transaction.id },
           data: {
-            status: 'CLAIMED',
+            status: 'COMPLETED',
             txHash: result.txId,
-            claimedAt: new Date(),
           },
         });
 
@@ -53,14 +52,14 @@ export async function POST(request: NextRequest) {
           where: { id: userId },
           data: {
             realmBalance: {
-              increment: amount,
+              increment: Number(amount),
             },
           },
         });
 
         return NextResponse.json({
           success: true,
-          data: updatedReward,
+          data: updatedTransaction,
           autoDistributed: true,
         });
       } catch (error) {
@@ -71,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: reward,
+      data: transaction,
       autoDistributed: false,
     });
   } catch (error: unknown) {

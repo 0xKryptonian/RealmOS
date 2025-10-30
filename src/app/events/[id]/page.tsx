@@ -97,7 +97,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         const newMessage: ChatMessage = {
             id: Date.now().toString(),
             text: message,
-            sender: address || "",
+            sender: userAccountId || "",
             timestamp: Date.now()
         };
 
