@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Gamepad2, Twitter, Github, MessageCircle, Mail, ExternalLink } from "lucide-react";
 
 const footerLinks = {
@@ -46,7 +47,7 @@ export function Footer() {
             <Link href="/" className="flex items-center space-x-2 group mb-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-[#98ee2c] blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-                <Gamepad2 className="h-8 w-8 text-[#98ee2c] relative" />
+                <Image src="/logo.png" alt="RealmOS" width={32} height={32} /> 
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
                 RealmOS

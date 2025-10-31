@@ -33,6 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 type NavSubItem = {
   name: string;
@@ -151,7 +152,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-[#98ee2c] blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-              <Gamepad2 className="h-8 w-8 text-[#98ee2c] relative" />
+                <Image src="/logo.png" alt="RealmOS" width={32} height={32} />  
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
               RealmOS

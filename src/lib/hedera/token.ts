@@ -73,7 +73,8 @@ export class HederaTokenService {
       .setTreasuryAccountId(treasuryId)
       .setAdminKey(adminKey)
       .setSupplyKey(supplyKey)
-      .setTokenType(TokenType.FungibleCommon);
+      .setTokenType(TokenType.FungibleCommon)
+      .setMaxTransactionFee(new Hbar(30)); // Increase max fee for token creation
 
     if (maxSupply) {
       transaction.setSupplyType(TokenSupplyType.Finite);
@@ -118,7 +119,8 @@ export class HederaTokenService {
       .setTokenType(TokenType.NonFungibleUnique)
       .setTreasuryAccountId(treasuryId)
       .setAdminKey(adminKey)
-      .setSupplyKey(supplyKey);
+      .setSupplyKey(supplyKey)
+      .setMaxTransactionFee(new Hbar(30)); // Increase max fee for NFT collection creation
 
     if (maxSupply) {
       transaction.setSupplyType(TokenSupplyType.Finite);
