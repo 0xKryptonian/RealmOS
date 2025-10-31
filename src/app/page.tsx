@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Zap, Shield, Coins, Sparkles, Trophy, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 
 const features = [
   {
@@ -28,7 +29,7 @@ const features = [
     icon: Sparkles,
     title: "AI-Powered",
     description: "Three specialized AI agents to enhance your gaming experience.",
-    stat: "3 Agents",
+    stat: "4 Agents",
   },
 ];
 
@@ -37,21 +38,21 @@ const games = [
     name: "Chess",
     description: "Classic strategy with AI opponent",
     image: "/images/game/chess.jpeg",
-    players: "15K+",
+    players: "5+",
     reward: "0.5 HBAR",
   },
   {
     name: "Tetris",
     description: "Puzzle blocks with leaderboard",
     image: "/images/game/tetris.jpg",
-    players: "12K+",
+    players: "5+",
     reward: "0.3 HBAR",
   },
   {
     name: "Snake",
     description: "Retro arcade action",
     image: "/images/game/snake.jpg",
-    players: "10K+",
+    players: "5+",
     reward: "0.2 HBAR",
   },
 ];
@@ -206,6 +207,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-[#98ee2c]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Trophy className="h-16 w-16 text-[#98ee2c]/50" />
+                    <Image src={game.image} alt={game.name} width={500} height={500} />
                   </div>
                 </div>
                 <CardContent className="p-6">
@@ -223,7 +225,7 @@ export default function HomePage() {
                       {game.reward}
                     </div>
                   </div>
-                  <Link href={`/games/${game.name.toLowerCase()}`}>
+                  <Link href={`/games`}>
                     <Button className="w-full bg-[#98ee2c]/10 text-[#98ee2c] hover:bg-[#98ee2c]/20 border border-[#98ee2c]/30">
                       Play Now
                       <ArrowRight className="ml-2 h-4 w-4" />

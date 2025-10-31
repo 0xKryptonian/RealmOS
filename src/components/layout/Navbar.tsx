@@ -63,7 +63,7 @@ const navigation: NavItem[] = [
       { name: "Game Master Agent", href: "/agents/chat", icon: Bot },
       { name: "Marketplace Agent", href: "/agents/chat", icon: Store },
       { name: "Social Agent", href: "/agents/chat", icon: UsersRound },
-      { name: "MiniGames Agent", href: "/agent-minigame", icon: Puzzle },
+      { name: "MiniGames Agent", href: "/agents/minigame", icon: Puzzle },
     ],
   },
   { 
@@ -298,7 +298,7 @@ export function Navbar() {
             ) : (
               <Button
                 onClick={handleConnect}
-                className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] !text-black font-semibold hover:opacity-90"
               >
                 <Wallet className="h-4 w-4 mr-2" />
                 Connect Wallet
@@ -417,7 +417,7 @@ export function Navbar() {
                   handleConnect();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold"
+                className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] !text-black font-semibold"
               >
                 <Wallet className="h-4 w-4 mr-2" />
                 Connect Wallet
