@@ -152,7 +152,7 @@ export function ListNFTModal({ open, onClose, nft, onSuccess }: ListNFTModalProp
               </span>
             </div>
             <div className="border-t border-white/10 pt-2 flex justify-between font-semibold">
-              <span className="text-white">You'll Receive</span>
+              <span className="text-white">You&apos;ll Receive</span>
               <span className="text-[#98ee2c]">
                 {price ? (parseFloat(price) * 0.925).toFixed(2) : '0.00'} {currency}
               </span>

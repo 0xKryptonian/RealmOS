@@ -281,8 +281,8 @@ export function Navbar() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile#stats" className="cursor-pointer">
-                      Statistics
+                    <Link href="/rewards" className="cursor-pointer">
+                      Rewards
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-800" />
