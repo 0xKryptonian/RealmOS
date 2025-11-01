@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { GameRefinementConsole, GenerationLog } from '@/components/game-refinement-console';
 import { useDAppConnector } from '@/components/client-providers';
 import { TokenAssociateTransaction, AccountId, TokenId } from '@hashgraph/sdk';
-import { GAME_NFT } from '@/lib/constants';
+import { GAME_NFT, MINIGAME_IMAGE_IPFS_URL } from '@/lib/constants';
 
 export default function CreateGamePage() {
   const [prompt, setPrompt] = useState('');
@@ -309,7 +309,7 @@ export default function CreateGamePage() {
     if (!gameCode || !gameSpec) return;
 
     setIsStoringOnHedera(true);
-    setHederaStatus('Storing game on Hedera...');
+    setHederaStatus('Storing game on Hedera File Service...');
     addLog('hedera', '📦 Storing game on Hedera File Service...', 'info', 'Uploading to HFS');
 
     try {
@@ -383,14 +383,50 @@ export default function CreateGamePage() {
     addLog('hedera', '🎨 Minting game as NFT...', 'info', 'Creating on-chain asset');
 
     try {
+      // 1) Build proper ERC-721 style JSON metadata and pin to IPFS
+      const metadataJson = {
+        name: gameSpec.title,
+        description: `AI-generated MiniGame: ${gameSpec.title}`,
+        image: MINIGAME_IMAGE_IPFS_URL,
+        attributes: [
+          { trait_type: 'Agent', value: 'MiniGame' },
+          { trait_type: 'Storage', value: 'HFS' },
+          { trait_type: 'HFS Pointer', value: `hfs:${hfsMetadataId || hederaFileId}` },
+        ],
+      };
+
+      addLog('hedera', '📌 Pinning metadata...', 'info', 'Using Pinata');
+      let metadataPointerStr = '';
+      try {
+        const pinRes = await fetch('/api/ipfs/pin-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ json: metadataJson }),
+        });
+        const pinData = await pinRes.json();
+        if (pinRes.ok && pinData?.cid) {
+          metadataPointerStr = `ipfs://${pinData.cid}`;
+          console.log('hedera', '✅ Metadata pinned', 'success', `CID: ${pinData.cid}`);
+        } else {
+          throw new Error(pinData?.error || 'Pinning failed');
+        }
+      } catch (pinErr: any) {
+        console.log('hedera', '⚠️ pinning failed', 'warning', pinErr?.message || 'Unknown error');
+        console.log('hedera', '🔄 Using fallback inline metadata', 'info', 'Set PINATA_JWT in env for full metadata');
+        // Fallback: minimal JSON inline if pinning fails
+        metadataPointerStr = JSON.stringify({ image: MINIGAME_IMAGE_IPFS_URL });
+      }
+
+      console.log('metadataPointerStr', metadataPointerStr);
+
       const response = await fetch('/api/hedera/nft/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'GAME_ASSET',
           tokenId: GAME_NFT,
-          // Use compact metadata pointer to avoid METADATA_TOO_LONG
-          metadataPointer: hfsMetadataId ? `hfs:${hfsMetadataId}` : `hfs:${hederaFileId}`,
+          // Provide minimal JSON so explorers like Hashscan render the image
+          metadataPointer: metadataPointerStr,
           // Optional lightweight params for DB only
           params: {
             accountId: userAccountId,

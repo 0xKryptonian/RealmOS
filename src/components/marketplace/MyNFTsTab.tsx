@@ -67,11 +67,13 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
               const infoRes = await fetch(`${mirrorBaseUrl}/tokens/${nft.token_id}/nfts/${nft.serial_number}`, { cache: 'no-store' });
               if (infoRes.ok) {
                 const info = await infoRes.json();
-                meta = decodeNFTMetadata(info.metadata);
+                const decoded = decodeNFTMetadata(info.metadata);
+                meta = await resolveIpfsMetadata(decoded);
               }
             } catch {}
           } else {
-            meta = decodeNFTMetadata(nft.metadata);
+            const decoded = decodeNFTMetadata(nft.metadata);
+            meta = await resolveIpfsMetadata(decoded);
           }
 
           return {
@@ -121,11 +123,28 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
       try {
         return JSON.parse(decoded);
       } catch {
-        // not JSON, return as string/object
-        return { image: decoded };
+        // Not JSON. Could be a plain ipfs:// pointer.
+        return decoded;
       }
     } catch {
       return undefined;
+    }
+  }
+
+  async function resolveIpfsMetadata(meta: any): Promise<any> {
+    try {
+      if (typeof meta === 'string' && meta.startsWith('ipfs://')) {
+        const url = `https://ipfs.io/ipfs/${meta.slice(7)}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          return json;
+        }
+        return { image: meta };
+      }
+      return meta;
+    } catch {
+      return meta;
     }
   }
 
@@ -204,17 +223,11 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
             <Card key={nft.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
               <CardHeader className="p-0">
                 <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                  {nft.metadata?.image ? (
-                    <img
-                      src={nft.metadata.image}
-                      alt={nft.metadata?.name || 'NFT'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#98ee2c]/20 to-[#7bc922]/20 flex items-center justify-center">
-                      <Tag className="w-16 h-16 text-gray-400" />
-                    </div>
-                  )}
+                  <img
+                    src={getImageFromMetadata(nft.metadata)}
+                    alt={nft.metadata?.name || 'NFT'}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
                   {nft.rarity && (
                     <Badge className={`absolute top-2 right-2 ${getRarityColor(nft.rarity)}`}>
                       {nft.rarity}
@@ -262,4 +275,20 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
       )}
     </>
   );
+}
+
+function normalizeImageUrl(src?: string): string {
+  if (!src || src.trim() === '') return '/nft/minigame.png';
+  if (src.startsWith('hfs:')) return '/nft/minigame.png';
+  if (src.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${src.slice(7)}`;
+  return src;
+}
+
+function getImageFromMetadata(meta: any): string {
+  if (!meta) return '/nft/minigame.png';
+  // After resolveIpfsMetadata, meta should be the actual JSON. If it is still a string, treat it as direct image
+  const candidate = typeof meta === 'string'
+    ? meta
+    : meta.image || meta.image_url || meta.imageURI || meta.imageUri;
+  return normalizeImageUrl(candidate);
 }

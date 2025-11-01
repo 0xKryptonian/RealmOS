@@ -20,3 +20,7 @@ export const GUILD_TREASURY = "0.0.7171583";
 
 // Network Configuration
 export const HEDERA_NETWORK = "testnet";
+
+// Media CIDs (IPFS)
+export const MINIGAME_IMAGE_IPFS_CID = "bafybeiaqix2r6tvqq2zvsxtjam2a7yhv2lxqyrpch6bib234gsgrn46gue";
+export const MINIGAME_IMAGE_IPFS_URL = `ipfs://${MINIGAME_IMAGE_IPFS_CID}`;
