@@ -625,7 +625,7 @@ export default function CreateGamePage() {
           <CardTitle className="flex items-center justify-between">
             <span>Example Prompts - Try Different Game Types!</span>
             <span className="text-sm font-normal text-muted-foreground">
-              {useV2 ? '✨ V2 Enhanced' : '⚡ V1 Quick'}
+              {useV2 ? '✨ V2 (beta)' : '⚡ V1 Quick'}
             </span>
           </CardTitle>
         </CardHeader>
@@ -692,7 +692,7 @@ export default function CreateGamePage() {
               <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg border border-purple-500/20">
                 <div className="flex-1">
                   <div className="font-semibold text-sm flex items-center gap-2">
-                    {useV2 ? '✨ V2 Enhanced Mode' : '⚡ V1 Template Mode'}
+                    {useV2 ? '✨ V2 (in beta mode)' : '⚡ V1 Template Mode'}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {useV2 ? (
@@ -719,7 +719,7 @@ export default function CreateGamePage() {
               {/* Mode Info */}
               {useV2 ? (
                 <div className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg text-sm">
-                  <div className="font-semibold text-blue-400 mb-1">✨ V2 Mode Features:</div>
+                  <div className="font-semibold text-blue-400 mb-1">✨ V2 (beta) Features:</div>
                   <ul className="text-muted-foreground space-y-1 text-xs ml-4">
                     <li>• Custom enemy AI with unique behaviors</li>
                     <li>• Dynamic power-up systems</li>
@@ -759,12 +759,12 @@ export default function CreateGamePage() {
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {useV2 ? 'Generating (V2)...' : 'Generating...'}
+                      {useV2 ? 'Generating (V2 beta)...' : 'Generating...'}
                     </>
                   ) : (
                     <>
                       <Wand2 className="w-4 h-4 mr-2" />
-                      Generate Game {useV2 ? '(V2)' : ''}
+                      Generate Game {useV2 ? '(V2 beta)' : ''}
                     </>
                   )}
                 </Button>
@@ -884,7 +884,7 @@ export default function CreateGamePage() {
                         ) : (
                           <Database className="w-4 h-4 mr-2" />
                         )}
-                        Store on HFS
+                        Store on HFS via IPFS
                       </Button>
 
                       <Button

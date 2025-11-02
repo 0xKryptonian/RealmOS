@@ -24,17 +24,17 @@ const footerLinks = {
     { name: "HTS Documentation", href: "https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service", external: true },
   ],
   legal: [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Cookie Policy", href: "/cookies" },
+    { name: "Privacy Policy", href: "/" },
+    { name: "Terms of Service", href: "/" },
+    { name: "Cookie Policy", href: "/" },
   ],
 };
 
 const socialLinks = [
-  { name: "Twitter", href: "https://twitter.com/hederaverse", icon: Twitter },
-  { name: "Discord", href: "https://discord.gg/hederaverse", icon: MessageCircle },
-  { name: "GitHub", href: "https://github.com/hederaverse", icon: Github },
-  { name: "Email", href: "mailto:hello@hederaverse.io", icon: Mail },
+  { name: "Twitter", href: "https://twitter.com/", icon: Twitter },
+  { name: "Discord", href: "https://discord.gg/", icon: MessageCircle },
+  { name: "GitHub", href: "https://github.com/", icon: Github },
+  { name: "Email", href: "mailto:hi@realmos.xyz", icon: Mail },
 ];
 
 export function Footer() {
