@@ -244,6 +244,64 @@ Carbon negative certified → ESG compliant → Institutional ready
 
 ---
 
+## 🧩 Hedera Integration Snapshot
+
+- **HTS (Tokens & NFTs)**
+  - Why: Native primitives with predictable low fees for micro-rewards and NFTs
+  - Tx: `TokenCreateTransaction`, `TokenMintTransaction`, `TokenAssociateTransaction`, `TransferTransaction`, `TokenUpdateTransaction`
+  - Economics: ~$0.001 per mint/transfer → viable for every action
+
+- **HCS (Consensus Topics)**
+  - Why: Immutable scores and tournament results with consensus timestamps
+  - Tx: `TopicCreateTransaction`, `TopicMessageSubmitTransaction`, `TopicInfoQuery`, `TopicMessageQuery`
+  - Economics: ~$0.0001 per message → log every score/event
+
+- **HSCS (Smart Contracts)**
+  - Why: Marketplace, auctions, royalties, prize escrow, guild treasury
+  - Tx: `ContractCreateTransaction`, `ContractExecuteTransaction`, `ContractCallQuery`, `FileCreateTransaction`, `FileAppendTransaction`
+  - Economics: ~$0.001 per execute → frequent market ops at scale
+
+- **HFS (File Service)**
+  - Why: Store AI game HTML and NFT metadata with verifiable file IDs
+  - Tx: `FileCreateTransaction`, `FileAppendTransaction`, `FileContentsQuery`
+
+- **Mirror Node (REST)**
+  - Why: Reads for tokens, NFTs, contracts, and topics without running an indexer
+
+---
+
+## 👩‍⚖️ Judge Instructions (<10 min)
+
+1. Clone + install: `git clone <repo> && bun install` (or `npm install`)
+2. Env: `cp .env.example .env` → fill `HEDERA_OPERATOR_ID`, `HEDERA_OPERATOR_KEY`, `OPENAI_API_KEY`, `DATABASE_URL`, `NEXT_PUBLIC_WALLET_CONNECT_ID`
+3. DB: `bun run build:prisma && npx prisma migrate dev`
+4. Provision Hedera: `bun run setup:hedera` (creates HTS/HCS + writes IDs)
+5. Run: `bun run dev` → http://localhost:3000
+
+Access for AI judging: invite `Hackathon@hashgraph-association.com` as a collaborator on the repo.
+
+---
+
+## 🔗 Deployed Hedera IDs (Testnet)
+
+- Tokens (HTS)
+  - REALM (FT): `0.0.7171833`
+  - Profile NFT: `0.0.7171835`
+  - Game Asset NFT: `0.0.7171837`
+  - Achievement NFT: `0.0.7171838`
+
+- Topics (HCS)
+  - Leaderboard: `0.0.7171840`
+  - Game Events: `0.0.7171843`
+  - Tournaments: `0.0.7171847`
+
+- Contracts (HSCS)
+  - NFTMarketplace: `0.0.7171576`
+  - PrizeEscrow: `0.0.7171580`
+  - GuildTreasury: `0.0.7171583`
+
+---
+
 ## 📊 By The Numbers
 
 ### Implementation Metrics

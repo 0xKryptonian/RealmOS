@@ -11,11 +11,23 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Hedera Agent Kit](https://img.shields.io/badge/Hedera-Agent%20Kit-green)](https://github.com/hashgraph/hedera-agent-kit)
 
-[🎯 Live Demo](#) • [📖 Documentation](./documents/README.md) • [🎥 Video Demo](#) • [🏆 Hedera Hack Track 3](https://hedera.com)
+[🎯 Live Demo](https://realmos.xyz) • [📖 Documentation](./documents/README.md) • [🎥 Video Demo](https://youtu.be/lC7Cd4cRWwM) • [📊 Pitch Deck](./PITCH.md) • [🏆 Hedera Hack Track 3](https://hedera.com)
 
 </div>
 
 ---
+
+## 📋 Table of Contents
+- **Project Description**
+- **System Architecture**
+- **Hedera Integration Summary**
+- **Deployed Hedera IDs**
+- **Judge Setup (< 10 minutes)**
+- **Quick Start**
+- **Running Environment**
+- **Security & Secrets**
+- **Code Quality & Auditability**
+- **Links**
 
 ## 🎯 The Problem
 
@@ -50,6 +62,31 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 
 ---
 
+## 📄 Project Description (Structured)
+
+### **Problem Statement (African Context)**
+Millions of gamers across Africa face high mobile data costs, limited access to fair esports infrastructure, and prohibitively high blockchain fees that make micro-rewards impossible. Centralized leaderboards and prize management erode trust, while cross-game identity and asset ownership remain siloed.
+
+### **Hedera-Based Solution**
+- **Ultra-low fees** enable true micro-rewards for every action (login, score, achievement).
+- **Immutable leaderboards** via HCS guarantee fair ordering and tamper-proof results.
+- **HTS-native tokens/NFTs** provide real ownership of profiles, assets, and achievements.
+- **Smart contract marketplace & prize escrow** automate trustless payouts.
+- **Mirror Node reads** keep analytics fast and essentially free.
+
+### **Hedera Services Used (Implementation)**
+- **HTS**: 1 FT (REALM) + 3 NFT collections (Profile, Game Assets, Achievements).
+- **HCS**: 3 topics (Scores, Game Events, Tournaments) with real-time UI subscriptions.
+- **HSCS**: Marketplace, Escrow, Guild Treasury contracts for atomic swaps and payouts.
+- **HFS**: Store generated game HTML and NFT metadata with verifiable file IDs.
+- **Mirror Node**: REST queries for history, balances, and topic messages.
+- **Hedera Agent Kit**: Orchestrates on-chain actions from AI agents.
+
+### **Hackathon Track**
+**Track 3: Gaming & NFTs**
+
+---
+
 ## ✨ Key Features
 
 ### 🤖 **AI Game Generator**
@@ -58,23 +95,23 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 - **Natural Language Input**: "Create a space shooter with power-ups" → Instant game
 - **9 Game Templates**: Shooter, Platformer, Puzzle, Racing, Idle, Card, Arcade, Strategy, Board
 - **Phaser.js Engine**: Production-ready games with physics, collisions, and scoring
-- **GPT-4 Powered**: Intelligent prompt parsing and game specification generation
+- **GPT-4 Powered**: Intelligent prompt parsing and game specification generation built on the stack of Hedera Agent Kit.
 - **Instant Preview**: Play immediately in browser or download as HTML
 - **NFT Minting**: Convert generated games into tradeable NFTs
 
 **Try it**: `/create-game` → Type your idea → Play in 60 seconds
 
-### 🎮 **7 Built-in Games**
+### 🎮 **7 Built-in & Onboarded Games**
 > Professional games with blockchain integration
 
 | Game | Type | Rewards | Features |
 |------|------|---------|----------|
-| ♟️ **Chess** | Strategy | 50-200 REALM | Stockfish AI, multiplayer, ELO ranking |
-| 🔢 **Sudoku** | Puzzle | 30-150 REALM | Multiple difficulties, hints, timer |
-| 🧱 **Tetris** | Arcade | 40-180 REALM | Classic gameplay, high scores, combos |
-| 📝 **Wordle** | Word | 25-100 REALM | Daily challenges, streak bonuses |
-| 🔤 **Crypto Crossword** | Puzzle | 60-250 REALM | Blockchain-themed, collaborative |
-| 🐍 **Snake & Ladder** | Board | 20-80 REALM | Multiplayer, tournaments |
+| ♟️ **Chess** | Strategy | 1-20 REALM | Stockfish AI, multiplayer, ELO ranking |
+| 🔢 **Sudoku** | Puzzle | 1-20 REALM | Multiple difficulties, hints, timer |
+| 🧱 **Tetris** | Arcade | 1-20 REALM | Classic gameplay, high scores, combos |
+| 📝 **Wordle** | Word | 1-20 REALM | Daily challenges, streak bonuses |
+| 🔤 **Crypto Crossword** | Puzzle | 1-20 REALM | Blockchain-themed, collaborative |
+| 🐍 **Snake & Ladder** | Board | 1-20 REALM | Multiplayer, tournaments |
 
 **All games**: Instant score submission to HCS, automatic REALM rewards, leaderboard tracking
 
@@ -117,7 +154,7 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 - **Platform Fee**: 2.5% (sustainable revenue model)
 - **Atomic Swaps**: Trustless NFT + payment exchange via smart contracts
 
-**Live**: `/marketplace` → Browse 100+ NFTs
+**Live**: `/marketplace` → Browse 20+ NFTs
 
 ### 🤝 **Social Gaming**
 > Build communities, compete with friends, join guilds
@@ -155,7 +192,7 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐ │
 │  │  Next.js   │  │  AI Game   │  │ 7 Built-in │  │  Social    │ │
 │  │  Frontend  │  │  Generator │  │   Games    │  │  Features  │ │
-│  │  (React)   │  │  (GPT-4)   │  │ (Phaser.js)│  │  (Guilds)  │ │
+│  │  (React)   │  │  (GPT-4)   │  │ (on Hedera)│  │  (Guilds)  │ │
 │  └────────────┘  └────────────┘  └────────────┘  └────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
                               ↕
@@ -198,9 +235,38 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 **Security**
 - 🔒 **aBFT consensus** - mathematically proven security
 - 🛡️ **No MEV** - fair ordering guaranteed
-- ✅ **Audited** by leading security firms
 
 ---
+
+## 🔗 Hedera Integration Summary (Detailed)
+
+RealmOS is Hedera-native across tokens, consensus, contracts, files, and analytics.
+
+### 1) Hedera Token Service (HTS) — Tokens & NFTs
+- **Why**: Native primitives with predictable low fees; enables micro-rewards and affordable NFT minting for assets, achievements, and profile identity.
+- **Transaction types**: `TokenCreateTransaction`, `TokenMintTransaction`, `TokenAssociateTransaction`, `TransferTransaction`, `TokenUpdateTransaction`.
+- **Economic justification**: ~$0.001/mint or transfer → sustainable rewards for every action without breaking unit economics.
+
+### 2) Hedera Consensus Service (HCS) — Immutable Leaderboards
+- **Why**: Scores and tournament results require tamper-proof history with consensus timestamps for fair esports.
+- **Transaction types**: `TopicCreateTransaction`, `TopicMessageSubmitTransaction`, `TopicInfoQuery`, `TopicMessageQuery`.
+- **Economic justification**: ~$0.0001/message → log every score/event transparently.
+
+### 3) Hedera Smart Contract Service (HSCS) — Marketplace, Escrow, Treasury
+- **Why**: Auctions, royalties, atomic swaps, and prize distribution need programmable logic and deterministic costs.
+- **Transaction types**: `ContractCreateTransaction`, `ContractExecuteTransaction`, `ContractCallQuery`, `FileCreateTransaction`, `FileAppendTransaction`.
+- **Economic justification**: ~$0.001/execute → frequent marketplace operations viable.
+
+### 4) Hedera File Service (HFS) — Game/Metadata Storage
+- **Why**: Store AI-generated game HTML and NFT metadata directly on Hedera with chunked uploads and verifiable file IDs.
+- **Transaction types**: `FileCreateTransaction`, `FileAppendTransaction`, `FileContentsQuery`.
+- **Economic justification**: Cheap, verifiable storage without custom storage contracts.
+
+### 5) Mirror Nodes (REST) — Analytics & History
+- **Why**: Efficient reads for tokens, NFTs, contracts, and topics without running an indexer.
+- **Queries**: Account balances/history, token/NFT info, contract logs/results, HCS topic messages.
+- **Economic justification**: Off-chain reads keep costs near-zero while retaining on-chain verifiability.
+
 
 ## 🎯 Hedera Resources
 
@@ -227,6 +293,27 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 
 ---
 
+## 🧭 Judge Setup (< 10 minutes)
+
+1. **Clone**
+   - `git clone <repo-url>`
+   - `bun install` (or `npm install`)
+2. **Environment**
+   - `cp .env.example .env`
+   - Fill `HEDERA_OPERATOR_ID`, `HEDERA_OPERATOR_KEY`, `OPENAI_API_KEY`, `DATABASE_URL`, `NEXT_PUBLIC_WALLET_CONNECT_ID`.
+3. **Database**
+   - `bun run build:prisma`
+   - `npx prisma migrate dev`
+4. **Provision Hedera (Testnet)**
+   - `bun run setup:hedera` (creates HTS tokens + HCS topics and writes IDs into `.env`)
+5. **Run**
+   - `bun run dev` → open http://localhost:3000
+   - Frontend (Next.js) and API routes run on the same server.
+
+> Judge access: Invite `Hackathon@hashgraph-association.com` as a collaborator on this GitHub repo.
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Blockchain (Hedera Native)
@@ -234,7 +321,9 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 - **HTS** - Native token standard (1 fungible + 3 NFT collections)
 - **HCS** - Consensus service for immutable leaderboards
 - **HSCS** - Smart contracts (Solidity 0.8.20)
-- **Hedera Agent Kit** - AI agent framework with LangChain
+- **HFS** - File service for game assets and metadata
+- **Mirror Nodes (REST)** - Analytics & history service
+- **Hedera Agent Kit** - AI agent framework with LangChain using OpenAI
 - **@hashgraph/sdk** - Official Hedera SDK v2.67
 
 ### AI & Game Generation
@@ -242,6 +331,7 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 - **LangChain** - AI agent orchestration
 - **Phaser.js 3.80** - Game engine for 9 templates
 - **3 AI Agents**: Game Assistant, Tournament Manager, Reward Distributor
+- **Minigame Agent**: AI agent for minigame generation using Hedera Agent Kit
 
 ### Frontend
 - **Next.js 15** - React framework with App Router
@@ -255,7 +345,17 @@ We aim to create an immersive, impartial and inclusive ecosystem for web3 gamers
 - **PostgreSQL** - Primary database
 - **Prisma ORM** - Type-safe database access (20+ models)
 - **Livepeer Studio** - Decentralized streaming
-- **IPFS** - Decentralized NFT metadata storage
+- **HFS** - Decentralized NFT metadata storage
+
+---
+
+## 🧪 Code Quality & Auditability
+
+- **TypeScript-first** with strict types and descriptive errors.
+- **Linters/Formatters**: ESLint + Prettier (`eslint.config.mjs`, `.prettierrc`).
+- **Clear modules**: Hedera clients live in `src/lib/hedera/` (e.g., `token.ts`, `consensus.ts`, `marketplace-contract.ts`, `scheduled-transaction-service.ts`).
+- **Readable APIs**: Next.js routes in `src/app/api/**` mirror service names for easy auditing.
+- **Docs**: This `README.md` + `GETTING_STARTED.md` provide setup and reasoning for reviewers.
 
 ---
 
@@ -385,8 +485,8 @@ bun install
 # 3. Configure environment
 cp .env.example .env
 # Edit .env with your credentials:
-# - HEDERA_ACCOUNT_ID
-# - HEDERA_PRIVATE_KEY
+# - HEDERA_OPERATOR_ID  # preferred (legacy HEDERA_ACCOUNT_ID supported)
+# - HEDERA_OPERATOR_KEY # preferred (legacy HEDERA_PRIVATE_KEY supported)
 # - OPENAI_API_KEY
 # - DATABASE_URL
 # - NEXT_PUBLIC_WALLET_CONNECT_ID
@@ -418,8 +518,12 @@ open http://localhost:3000
 OPENAI_API_KEY="sk-..."
 
 # Hedera
-HEDERA_ACCOUNT_ID="0.0.xxxxx"
-HEDERA_PRIVATE_KEY="302e..."
+# Prefer OPERATOR_*; legacy names supported
+HEDERA_OPERATOR_ID="0.0.xxxxx"
+HEDERA_OPERATOR_KEY="302e..."
+# Legacy fallback (optional)
+# HEDERA_ACCOUNT_ID="0.0.xxxxx"
+# HEDERA_PRIVATE_KEY="302e..."
 HEDERA_NETWORK="testnet"
 NEXT_PUBLIC_WALLET_CONNECT_ID="..."
 
@@ -429,23 +533,22 @@ DATABASE_URL="postgresql://user:pass@localhost:5432/realmos"
 # Streaming
 NEXT_PUBLIC_LIVEPEER_API_KEY="..."
 
-# Auto-generated by setup script
-REALM_TOKEN_ID="0.0.xxxxx"
-PROFILE_NFT_TOKEN_ID="0.0.xxxxx"
-GAME_NFT_TOKEN_ID="0.0.xxxxx"
-ACHIEVEMENT_NFT_TOKEN_ID="0.0.xxxxx"
-LEADERBOARD_TOPIC_ID="0.0.xxxxx"
-GAME_EVENTS_TOPIC_ID="0.0.xxxxx"
-TOURNAMENT_TOPIC_ID="0.0.xxxxx"
 ```
+
+## 🖥️ Running Environment
+
+- **Frontend**: Next.js dev server at `http://localhost:3000`
+- **API**: Next.js App Router endpoints under `src/app/api/**`
+- **Network**: Hedera Testnet (`HEDERA_NETWORK=testnet`)
+- **Runtime**: Node.js v18+ or Bun
 
 ---
 
 ## 🗺️ Roadmap
 
 ### **✅ Phase 1: Hackathon (Current)**
-- [x] Core Hedera infrastructure (HTS, HCS, HSCS)
-- [x] AI game generator with 9 templates
+- [x] Core Hedera infrastructure (HTS, HCS, HSCS, HFS)
+- [x] AI game generator agent with 9 templates
 - [x] 7 playable games with blockchain integration
 - [x] NFT marketplace with smart contracts
 - [x] Tournament system with prize escrow
@@ -457,12 +560,12 @@ TOURNAMENT_TOPIC_ID="0.0.xxxxx"
 - [x] Demo video and documentation
 
 ### **Phase 2: Mainnet Launch (Next 3 months)**
-- [ ] Deploy to Hedera mainnet
 - [ ] Security audit of smart contracts
 - [ ] Onboard 100 beta users
 - [ ] Launch 10 community tournaments
 - [ ] Mobile-responsive improvements
 - [ ] Real-time chat (WebSocket)
+- [ ] Deploy to Hedera mainnet
 
 ### **Phase 3: Community Growth (Next 6 months)**
 - [ ] 10,000+ active players
@@ -503,6 +606,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 - **Demo**: https://realmos.xyz
 - **Video**: https://youtu.be/lC7Cd4cRWwM
+- **Pitch Deck**: https://drive.google.com/file/d/1fWCXr6_vQ4R7sx-7eAGvSaMBfyHzgPWm/view?usp=drive_link
 - **Twitter**: [@RealmOS](#)
 
 ### **Hedera Resources**
