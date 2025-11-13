@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Hedera Agent Kit](https://img.shields.io/badge/Hedera-Agent%20Kit-green)](https://github.com/hashgraph/hedera-agent-kit)
 
-[🎯 Live Demo](https://realmos.xyz) • [📖 Documentation](./documents/README.md) • [🎥 Video Demo](https://youtu.be/lC7Cd4cRWwM) • [📊 Pitch Deck](./PITCH.md) • [🏆 Hedera Hack Track 3](https://hedera.com)
+[🎯 Live Demo](https://realmos.xyz) • [📖 Documentation](./documents/README.md) • [🎥 Video Demo](https://youtu.be/lC7Cd4cRWwM) • [📊 Pitch Deck](https://drive.google.com/drive/folders/17X9utbxDeg_Og3AOe2Fi0wt6xk2MtzCp?usp=sharing) • [🏆 Hedera Hack Track 3](https://hedera.com)
 
 </div>
 
@@ -606,7 +606,7 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 - **Demo**: https://realmos.xyz
 - **Video**: https://youtu.be/lC7Cd4cRWwM
-- **Pitch Deck**: https://drive.google.com/file/d/1fWCXr6_vQ4R7sx-7eAGvSaMBfyHzgPWm/view?usp=drive_link
+- **Pitch Deck**: https://drive.google.com/drive/folders/17X9utbxDeg_Og3AOe2Fi0wt6xk2MtzCp?usp=sharing
 - **Twitter**: [@RealmOS](#)
 
 ### **Hedera Resources**
