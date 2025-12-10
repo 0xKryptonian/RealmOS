@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { ClientProviders } from '@/components/client-providers';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { GlobalChat } from '@/components/social/GlobalChat';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -45,6 +46,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <GlobalChat />
         </ClientProviders>
       </body>
     </html>
