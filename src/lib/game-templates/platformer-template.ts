@@ -59,6 +59,10 @@ export function generatePlatformerGame(spec: GameSpec): string {
       type: Phaser.AUTO,
       width: ${config.width},
       height: ${config.height},
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
       parent: 'game-container',
       physics: {
         default: 'arcade',
