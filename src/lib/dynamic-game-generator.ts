@@ -8,27 +8,27 @@ import { mapEntityToIcon, generatePhaserIconTexture } from './icon-mapper';
 
 export function generateDynamicGame(design: GameDesign): string {
   const { title, gameDesign, visuals, config } = design;
-  
+
   console.log('\n🎨 [Dynamic Generator] Generating game code from design');
   console.log('   Generating textures for', (gameDesign.enemy_types?.length || 0) + 1, 'entities');
-  
+
   // Map entities to icons
   const playerIcon = mapEntityToIcon(gameDesign.player?.type || 'player', design.theme);
   const enemyIcons = gameDesign.enemy_types?.map(e => mapEntityToIcon(e.name, design.theme)) || [];
   const powerUpIcons = gameDesign.power_ups?.map(p => mapEntityToIcon(p.type, design.theme)) || [];
-  
+
   // Generate texture creation code
   const textureCode = generateTextureCode(playerIcon, enemyIcons, powerUpIcons);
-  
+
   // Generate enemy spawning logic
   const enemySpawnCode = generateEnemySpawnCode(gameDesign.enemy_types || []);
-  
+
   // Generate power-up logic
   const powerUpCode = generatePowerUpCode(gameDesign.power_ups || []);
-  
+
   // Generate player controls
   const controlsCode = generateControlsCode(gameDesign.player?.controls || []);
-  
+
   return `
 <!DOCTYPE html>
 <html>
@@ -332,26 +332,26 @@ export function generateDynamicGame(design: GameDesign): string {
 function generateTextureCode(playerIcon: ReturnType<typeof mapEntityToIcon>, enemyIcons: ReturnType<typeof mapEntityToIcon>[], powerUpIcons: ReturnType<typeof mapEntityToIcon>[]): string {
   let code = `// Generate player texture\n`;
   code += generatePhaserIconTexture('player', playerIcon, 32);
-  
+
   code += `\n// Generate bullet texture\n`;
   code += generatePhaserIconTexture('bullet', { collection: 'game-icons', icon: 'circle', color: '#ffff00' }, 8);
-  
+
   enemyIcons.forEach((icon, i) => {
     code += `\n// Generate enemy${i} texture\n`;
     code += generatePhaserIconTexture(`enemy${i}`, icon, 28);
   });
-  
+
   powerUpIcons.forEach((icon, i) => {
     code += `\n// Generate powerup${i} texture\n`;
     code += generatePhaserIconTexture(`powerup${i}`, icon, 24);
   });
-  
+
   return code;
 }
 
 function generateEnemySpawnCode(enemyTypes: any[]): string {
   if (!enemyTypes.length) return '';
-  
+
   return `
     function startWave() {
       const waveMultiplier = 1 + (wave * 0.2);
@@ -378,7 +378,7 @@ function generateEnemySpawnCode(enemyTypes: any[]): string {
 
 function generatePowerUpCode(powerUps: any[]): string {
   if (!powerUps.length) return '';
-  
+
   return `
     function spawnPowerUp(x, y) {
       const powerUpType = Phaser.Math.RND.pick(POWER_UPS);

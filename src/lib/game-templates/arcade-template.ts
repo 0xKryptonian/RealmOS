@@ -6,7 +6,7 @@ import { GameSpec } from '../../types/game-spec';
 
 export function generateArcadeGame(spec: GameSpec): string {
   const { title, config, visuals } = spec;
-  
+
   return `
 <!DOCTYPE html>
 <html>
