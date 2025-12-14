@@ -182,6 +182,7 @@ export function GlobalChat() {
             </AnimatePresence>
 
             <Button
+                id="global-chat-toggle"
                 size="lg"
                 className={cn(
                     "pointer-events-auto rounded-full shadow-lg h-12 w-12 p-0 transition-transform hover:scale-105 active:scale-95",
