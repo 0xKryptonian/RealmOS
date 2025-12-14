@@ -50,8 +50,8 @@ type NavItem = {
 
 // Navigation structure with dropdowns
 const navigation: NavItem[] = [
-  { 
-    name: "Games", 
+  {
+    name: "Games",
     icon: Gamepad2,
     href: "/games",
   },
@@ -66,8 +66,8 @@ const navigation: NavItem[] = [
       { name: "MiniGames Agent", href: "/agents/minigame", icon: Puzzle },
     ],
   },
-  { 
-    name: "Esports", 
+  {
+    name: "Esports",
     icon: Trophy,
     items: [
       { name: "Tournaments", href: "/tournaments", icon: Trophy },
@@ -75,8 +75,8 @@ const navigation: NavItem[] = [
       { name: "Leaderboard", href: "/leaderboard", icon: BarChart3 },
     ]
   },
-  { 
-    name: "Social", 
+  {
+    name: "Social",
     icon: Users,
     items: [
       { name: "Guilds", href: "/guilds", icon: Users },
@@ -84,10 +84,10 @@ const navigation: NavItem[] = [
       { name: "Social Hub", href: "/social", icon: MessageSquare },
     ]
   },
-  { 
-    name: "Marketplace", 
-    href: "/marketplace", 
-    icon: ShoppingBag 
+  {
+    name: "Marketplace",
+    href: "/marketplace",
+    icon: ShoppingBag
   },
 ];
 
@@ -101,10 +101,9 @@ export function Navbar() {
   const disconnect = dAppContext?.disconnect;
 
   const getLinkClasses = (active: boolean) =>
-    `flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-      active
-        ? "bg-[#98ee2c]/10 text-[#98ee2c]"
-        : "text-gray-300 hover:text-white hover:bg-white/5"
+    `flex items-center space-x-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${active
+      ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+      : "text-gray-300 hover:text-white hover:bg-white/5"
     }`;
 
   const dropdownContentClasses =
@@ -140,11 +139,10 @@ export function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
           ? "bg-black/95 backdrop-blur-lg border-b border-gray-800"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -152,7 +150,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-[#98ee2c] blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-                <Image src="/logo.png" alt="RealmOS" width={32} height={32} />  
+              <Image src="/logo.png" alt="RealmOS" width={32} height={32} />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
               RealmOS
@@ -180,11 +178,10 @@ export function Navbar() {
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className={`ml-1 px-2 py-2 rounded-lg transition-all ${
-                              isActive
+                            className={`ml-1 px-2 py-2 rounded-lg transition-all ${isActive
                                 ? "bg-[#98ee2c]/10 text-[#98ee2c]"
                                 : "text-gray-300 hover:text-white hover:bg-white/5"
-                            }`}
+                              }`}
                             aria-label={`${item.name} menu`}
                           >
                             <ChevronDown className="h-3 w-3" />
@@ -353,11 +350,10 @@ export function Navbar() {
                         <Link
                           key={`${subItem.href}-${subItem.name}`}
                           href={subItem.href}
-                          className={`flex items-center space-x-2 px-3 py-2 pl-9 rounded-lg text-sm ${
-                            isActive
+                          className={`flex items-center space-x-2 px-3 py-2 pl-9 rounded-lg text-sm ${isActive
                               ? "bg-[#98ee2c]/10 text-[#98ee2c]"
                               : "text-gray-300 hover:text-white hover:bg-white/5"
-                          }`}
+                            }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <SubIcon className="h-4 w-4" />
@@ -374,11 +370,10 @@ export function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href ?? "/"}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium ${
-                    isActive
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium ${isActive
                       ? "bg-[#98ee2c]/10 text-[#98ee2c]"
                       : "text-gray-300 hover:text-white hover:bg-white/5"
-                  }`}
+                    }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Icon className="h-5 w-5" />
