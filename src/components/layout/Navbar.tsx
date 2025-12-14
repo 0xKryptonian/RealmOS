@@ -294,6 +294,7 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <Button
+                id="wallet-connect-btn"
                 onClick={handleConnect}
                 className="bg-gradient-to-r from-[#98ee2c] to-[#7bc922] !text-black font-semibold hover:opacity-90"
               >
