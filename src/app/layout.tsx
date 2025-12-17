@@ -6,6 +6,7 @@ import { ClientProviders } from '@/components/client-providers';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { GlobalChat } from '@/components/social/GlobalChat';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -47,6 +48,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <GlobalChat />
+          <OnboardingTour />
         </ClientProviders>
       </body>
     </html>
