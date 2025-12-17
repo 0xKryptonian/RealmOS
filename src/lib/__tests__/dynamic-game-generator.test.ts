@@ -6,6 +6,8 @@ describe('generateDynamicGame', () => {
     it('should generate valid Phaser game code', () => {
         const mockDesign: GameDesign = {
             title: 'Test Game',
+            category: 'Action Games',
+            theme: 'Sci-Fi',
             subcategory: 'Platformer',
             description: 'A test game',
             visuals: {
