@@ -7,6 +7,8 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { GlobalChat } from '@/components/social/GlobalChat';
 import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
+import { ActivityTicker } from '@/components/activity/ActivityTicker';
+import { DailyCheckIn } from '@/components/rewards/DailyCheckIn';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -48,6 +50,8 @@ export default function RootLayout({
           </main>
           <Footer />
           <GlobalChat />
+          <ActivityTicker />
+          <DailyCheckIn />
           <OnboardingTour />
         </ClientProviders>
       </body>
