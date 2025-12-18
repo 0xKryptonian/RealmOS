@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type NavSubItem = {
   name: string;
@@ -251,6 +252,7 @@ export function Navbar() {
 
           {/* Wallet Connection */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             {userAccountId ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -270,7 +272,7 @@ export function Navbar() {
                   <DropdownMenuSeparator className="bg-gray-800" />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
-                      Profile
+                      Profile (Lvl 12)
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
