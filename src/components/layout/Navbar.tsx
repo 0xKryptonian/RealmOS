@@ -141,8 +141,8 @@ export function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-          ? "bg-black/95 backdrop-blur-lg border-b border-gray-800"
-          : "bg-transparent"
+        ? "bg-black/95 backdrop-blur-lg border-b border-gray-800"
+        : "bg-transparent"
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,8 +180,8 @@ export function Navbar() {
                           <button
                             type="button"
                             className={`ml-1 px-2 py-2 rounded-lg transition-all ${isActive
-                                ? "bg-[#98ee2c]/10 text-[#98ee2c]"
-                                : "text-gray-300 hover:text-white hover:bg-white/5"
+                              ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+                              : "text-gray-300 hover:text-white hover:bg-white/5"
                               }`}
                             aria-label={`${item.name} menu`}
                           >
@@ -354,8 +354,8 @@ export function Navbar() {
                           key={`${subItem.href}-${subItem.name}`}
                           href={subItem.href}
                           className={`flex items-center space-x-2 px-3 py-2 pl-9 rounded-lg text-sm ${isActive
-                              ? "bg-[#98ee2c]/10 text-[#98ee2c]"
-                              : "text-gray-300 hover:text-white hover:bg-white/5"
+                            ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+                            : "text-gray-300 hover:text-white hover:bg-white/5"
                             }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
@@ -374,8 +374,8 @@ export function Navbar() {
                   key={item.name}
                   href={item.href ?? "/"}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium ${isActive
-                      ? "bg-[#98ee2c]/10 text-[#98ee2c]"
-                      : "text-gray-300 hover:text-white hover:bg-white/5"
+                    ? "bg-[#98ee2c]/10 text-[#98ee2c]"
+                    : "text-gray-300 hover:text-white hover:bg-white/5"
                     }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
