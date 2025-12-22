@@ -330,297 +330,300 @@ export default function MarketplacePage() {
           </p>
         </div>
 
-      {/* Filters and Search */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search NFTs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-          />
+        {/* Filters and Search */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search NFTs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+            />
+          </div>
+
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="PROFILE">Profile NFTs</SelectItem>
+              <SelectItem value="GAME_ASSET">Game Assets</SelectItem>
+              <SelectItem value="ACHIEVEMENT">Achievements</SelectItem>
+              <SelectItem value="PRIZE">Tournament Prizes</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Recently Listed</SelectItem>
+              <SelectItem value="price_low">Price: Low to High</SelectItem>
+              <SelectItem value="price_high">Price: High to Low</SelectItem>
+              <SelectItem value="rarity">Rarity</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <Filter className="w-4 h-4 mr-2" />
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="PROFILE">Profile NFTs</SelectItem>
-            <SelectItem value="GAME_ASSET">Game Assets</SelectItem>
-            <SelectItem value="ACHIEVEMENT">Achievements</SelectItem>
-            <SelectItem value="PRIZE">Tournament Prizes</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Tabs */}
+        <Tabs defaultValue="all" className="mb-8">
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="trending">Trending</TabsTrigger>
+            <TabsTrigger value="new">New</TabsTrigger>
+            <TabsTrigger value="my-nfts">My NFTs</TabsTrigger>
 
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Recently Listed</SelectItem>
-            <SelectItem value="price_low">Price: Low to High</SelectItem>
-            <SelectItem value="price_high">Price: High to Low</SelectItem>
-            <SelectItem value="rarity">Rarity</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          </TabsList>
 
-      {/* Tabs */}
-      <Tabs defaultValue="all" className="mb-8">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="trending">Trending</TabsTrigger>
-          <TabsTrigger value="new">New</TabsTrigger>
-          <TabsTrigger value="my-nfts">My NFTs</TabsTrigger>
-
-        </TabsList>
-
-        <TabsContent value="all" className="mt-6">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-48 bg-muted rounded-lg" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-4 bg-muted rounded mb-2" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
-              <p className="text-gray-400">
-                {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
-                  <CardHeader className="p-0">
-                    <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                      <img
-                        src={getImageFromMetadata(listing.nft.metadata)}
-                        alt={listing.nft.metadata?.name || 'NFT'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      {listing.nft.rarity && (
-                        <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
-                          {listing.nft.rarity}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold truncate text-white">
-                          {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {listing.nft.category}
-                        </p>
+          <TabsContent value="all" className="mt-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-48 bg-muted rounded-lg" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-4 bg-muted rounded mb-2" />
+                      <div className="h-4 bg-muted rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <div className="text-center py-12">
+                <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
+                <p className="text-gray-400">
+                  {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredListings.map((listing) => (
+                  <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
+                    <CardHeader className="p-0">
+                      <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                        <Image
+                          src={getImageFromMetadata(listing.nft.metadata)}
+                          alt={listing.nft.metadata?.name || 'NFT'}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                        {listing.nft.rarity && (
+                          <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
+                            {listing.nft.rarity}
+                          </Badge>
+                        )}
                       </div>
-                    </div>
+                    </CardHeader>
 
-                    <div className="flex items-center justify-between mt-4">
-                      <div>
-                        <p className="text-xs text-gray-400">Price</p>
-                        <p className="font-bold text-lg text-[#98ee2c]">
-                          {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
-                        </p>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold truncate text-white">
+                            {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            {listing.nft.category}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
 
-                  <CardFooter className="p-4 pt-0">
-                    <Button
-                      className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
-                      onClick={() => handleBuy(listing.id)}
-                      disabled={!userAccountId}
-                    >
-                      {userAccountId ? 'Buy Now' : 'Connect Wallet'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="my-nfts" className="mt-6">
-          <MyNFTsTab userAccountId={userAccountId || undefined} />
-        </TabsContent>
-
-        <TabsContent value="trending" className="mt-6">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-48 bg-muted rounded-lg" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-4 bg-muted rounded mb-2" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
-              <p className="text-gray-400">
-                {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
-                  <CardHeader className="p-0">
-                    <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                      <img
-                        src={getImageFromMetadata(listing.nft.metadata)}
-                        alt={listing.nft.metadata?.name || 'NFT'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      {listing.nft.rarity && (
-                        <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
-                          {listing.nft.rarity}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold truncate text-white">
-                          {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {listing.nft.category}
-                        </p>
+                      <div className="flex items-center justify-between mt-4">
+                        <div>
+                          <p className="text-xs text-gray-400">Price</p>
+                          <p className="font-bold text-lg text-[#98ee2c]">
+                            {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
 
-                    <div className="flex items-center justify-between mt-4">
-                      <div>
-                        <p className="text-xs text-gray-400">Price</p>
-                        <p className="font-bold text-lg text-[#98ee2c]">
-                          {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
-                        </p>
+                    <CardFooter className="p-4 pt-0">
+                      <Button
+                        className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                        onClick={() => handleBuy(listing.id)}
+                        disabled={!userAccountId}
+                      >
+                        {userAccountId ? 'Buy Now' : 'Connect Wallet'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="my-nfts" className="mt-6">
+            <MyNFTsTab userAccountId={userAccountId || undefined} />
+          </TabsContent>
+
+          <TabsContent value="trending" className="mt-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-48 bg-muted rounded-lg" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-4 bg-muted rounded mb-2" />
+                      <div className="h-4 bg-muted rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <div className="text-center py-12">
+                <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
+                <p className="text-gray-400">
+                  {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredListings.map((listing) => (
+                  <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
+                    <CardHeader className="p-0">
+                      <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                        <Image
+                          src={getImageFromMetadata(listing.nft.metadata)}
+                          alt={listing.nft.metadata?.name || 'NFT'}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                        {listing.nft.rarity && (
+                          <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
+                            {listing.nft.rarity}
+                          </Badge>
+                        )}
                       </div>
-                    </div>
-                  </CardContent>
+                    </CardHeader>
 
-                  <CardFooter className="p-4 pt-0">
-                    <Button
-                      className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
-                      onClick={() => handleBuy(listing.id)}
-                      disabled={!userAccountId}
-                    >
-                      {userAccountId ? 'Buy Now' : 'Connect Wallet'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="new" className="mt-6">
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader>
-                    <div className="h-48 bg-muted rounded-lg" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-4 bg-muted rounded mb-2" />
-                    <div className="h-4 bg-muted rounded w-2/3" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
-              <p className="text-gray-400">
-                {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
-                  <CardHeader className="p-0">
-                    <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                      <img
-                        src={getImageFromMetadata(listing.nft.metadata)}
-                        alt={listing.nft.metadata?.name || 'NFT'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      {listing.nft.rarity && (
-                        <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
-                          {listing.nft.rarity}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold truncate text-white">
-                          {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {listing.nft.category}
-                        </p>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold truncate text-white">
+                            {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            {listing.nft.category}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center justify-between mt-4">
-                      <div>
-                        <p className="text-xs text-gray-400">Price</p>
-                        <p className="font-bold text-lg text-[#98ee2c]">
-                          {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
-                        </p>
+                      <div className="flex items-center justify-between mt-4">
+                        <div>
+                          <p className="text-xs text-gray-400">Price</p>
+                          <p className="font-bold text-lg text-[#98ee2c]">
+                            {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
+                    </CardContent>
 
-                  <CardFooter className="p-4 pt-0">
-                    <Button
-                      className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
-                      onClick={() => handleBuy(listing.id)}
-                      disabled={!userAccountId}
-                    >
-                      {userAccountId ? 'Buy Now' : 'Connect Wallet'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                    <CardFooter className="p-4 pt-0">
+                      <Button
+                        className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                        onClick={() => handleBuy(listing.id)}
+                        disabled={!userAccountId}
+                      >
+                        {userAccountId ? 'Buy Now' : 'Connect Wallet'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="new" className="mt-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-48 bg-muted rounded-lg" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-4 bg-muted rounded mb-2" />
+                      <div className="h-4 bg-muted rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <div className="text-center py-12">
+                <Tag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">No listings found</h3>
+                <p className="text-gray-400">
+                  {searchQuery ? 'Try adjusting your search' : 'Check back later for new items'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredListings.map((listing) => (
+                  <Card key={listing.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
+                    <CardHeader className="p-0">
+                      <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                        <Image
+                          src={getImageFromMetadata(listing.nft.metadata)}
+                          alt={listing.nft.metadata?.name || 'NFT'}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                        {listing.nft.rarity && (
+                          <Badge className={`absolute top-2 right-2 ${getRarityColor(listing.nft.rarity)}`}>
+                            {listing.nft.rarity}
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold truncate text-white">
+                            {listing.nft.metadata?.name || `NFT #${listing.nft.serialNumber}`}
+                          </h3>
+                          <p className="text-sm text-gray-400">
+                            {listing.nft.category}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-4">
+                        <div>
+                          <p className="text-xs text-gray-400">Price</p>
+                          <p className="font-bold text-lg text-[#98ee2c]">
+                            {(Number(listing.priceTinybar) / 100_000_000).toFixed(2)} HBAR
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="p-4 pt-0">
+                      <Button
+                        className="w-full bg-gradient-to-r from-[#98ee2c] to-[#7bc922] text-black font-semibold hover:opacity-90"
+                        onClick={() => handleBuy(listing.id)}
+                        disabled={!userAccountId}
+                      >
+                        {userAccountId ? 'Buy Now' : 'Connect Wallet'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
