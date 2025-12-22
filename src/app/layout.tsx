@@ -21,14 +21,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'RealmOS - AI-Powered Gaming on Hedera',
-  description: 'Play games, earn HBAR rewards, and own your achievements. The first AI-powered gaming platform on Hedera with instant rewards and ultra-low fees.',
-  keywords: ['Hedera', 'Gaming', 'NFT', 'Blockchain', 'AI Agents', 'Web3', 'Play-to-Earn', 'HBAR'],
-  authors: [{ name: 'RealmOS Team' }],
+  title: {
+    default: 'RealmOS - AI-Powered Gaming on Hedera',
+    template: '%s | RealmOS'
+  },
+  description: 'The first AI-powered gaming operating system on Hedera. Build, play, and earn with instant rewards, 7+ built-in games, and decentralized chat.',
+  keywords: ['Hedera', 'Gaming', 'NFT', 'Blockchain', 'AI Agents', 'Web3', 'Play-to-Earn', 'HBAR', 'Metaverse'],
+  authors: [{ name: 'RealmOS Team', url: 'https://realmos.xyz' }],
+  creator: 'RealmOS',
   openGraph: {
-    title: 'RealmOS - AI-Powered Gaming on Hedera',
-    description: 'Play games, earn HBAR rewards instantly. Built on the world\'s most sustainable blockchain.',
     type: 'website',
+    locale: 'en_US',
+    url: 'https://realmos.xyz',
+    title: 'RealmOS - AI-Powered Gaming on Hedera',
+    description: 'Build, play, and earn in the decentralized metaverse. Powered by Hedera.',
+    siteName: 'RealmOS',
+    images: [
+      {
+        url: 'https://realmos.xyz/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'RealmOS Platform Preview',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RealmOS - AI Gaming on Hedera',
+    description: 'Build, play, and earn in the decentralized metaverse.',
+    images: ['https://realmos.xyz/og-image.jpg'],
+    creator: '@RealmOS_Hedera',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
