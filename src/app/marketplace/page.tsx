@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
@@ -70,7 +71,7 @@ export default function MarketplacePage() {
           const cJson = await cRes.json();
           if (cJson?.evm_address) contractKey = cJson.evm_address;
         }
-      } catch {}
+      } catch { }
 
       // 1) Pull recent logs for the marketplace contract
       const logsRes = await fetch(`${mirrorBaseUrl}/contracts/${contractKey}/results/logs?limit=500&order=desc`, { cache: 'no-store' });
@@ -79,7 +80,7 @@ export default function MarketplacePage() {
       const logs: any[] = logsJson.logs || [];
 
       // 2) Build state from events
-      const created: Record<string, { seller: Hex; nft: Hex; serial: number; price: bigint; type: ListingType; ts?: number } > = {};
+      const created: Record<string, { seller: Hex; nft: Hex; serial: number; price: bigint; type: ListingType; ts?: number }> = {};
       const cancelled = new Set<string>();
       const sold = new Set<string>();
 
