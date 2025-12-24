@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
-import { Button } from '../ui/button';
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Badge } from '../ui/badge';
 import { Tag } from 'lucide-react';
 import { toast } from 'sonner';
