@@ -152,10 +152,12 @@ function GameStatItem({ stat }: { stat: GameStat }) {
         <div className="flex items-start space-x-4 p-3 rounded-lg border bg-card">
             <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
                 {stat.game.imageUrl ? (
-                    <img
+                    <Image
                         src={stat.game.imageUrl}
                         alt={stat.game.name}
-                        className="h-full w-full object-cover"
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-lg object-cover border border-white/10"
                     />
                 ) : (
                     <div className="h-full w-full bg-muted flex items-center justify-center">
