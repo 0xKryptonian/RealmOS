@@ -71,7 +71,7 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
                 const decoded = decodeNFTMetadata(info.metadata);
                 meta = await resolveIpfsMetadata(decoded);
               }
-            } catch {}
+            } catch { }
           } else {
             const decoded = decodeNFTMetadata(nft.metadata);
             meta = await resolveIpfsMetadata(decoded);
@@ -104,7 +104,7 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
     }
   }, [userAccountId, fetchMyNFTs]);
 
-  
+
 
   function decodeNFTMetadata(raw?: string): any {
     if (!raw) return undefined;
