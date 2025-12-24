@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
+import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
 import { Trophy, GamepadIcon, Clock, BarChart } from "lucide-react"
 
