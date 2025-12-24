@@ -224,10 +224,11 @@ export function MyNFTsTab({ userAccountId }: MyNFTsTabProps) {
             <Card key={nft.id} className="bg-white/5 backdrop-blur-sm border-white/10 group hover:border-[#98ee2c]/30 transition-all">
               <CardHeader className="p-0">
                 <div className="relative aspect-square overflow-hidden rounded-t-lg">
-                  <img
+                  <Image
                     src={getImageFromMetadata(nft.metadata)}
                     alt={nft.metadata?.name || 'NFT'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    fill
+                    className="object-cover transition-transform group-hover:scale-110"
                   />
                   {nft.rarity && (
                     <Badge className={`absolute top-2 right-2 ${getRarityColor(nft.rarity)}`}>
