@@ -311,6 +311,7 @@ export function Navbar() {
             type="button"
             className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
