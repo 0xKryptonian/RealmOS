@@ -47,14 +47,14 @@ export function Footer() {
             <Link href="/" className="flex items-center space-x-2 group mb-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-[#98ee2c] blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-                <Image src="/logo.png" alt="RealmOS" width={32} height={32} /> 
+                <Image src="/logo.png" alt="RealmOS" width={32} height={32} />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#98ee2c] to-[#7bc922] bg-clip-text text-transparent">
                 RealmOS
               </span>
             </Link>
             <p className="text-gray-400 text-sm mb-4 max-w-sm">
-              The first AI-powered gaming platform on Hedera. Play games, earn HBAR rewards, 
+              The first AI-powered gaming platform on Hedera. Play games, earn HBAR rewards,
               and own your achievements with NFTs. Built for speed, sustainability, and fairness.
             </p>
             <div className="flex items-center space-x-4">
@@ -131,41 +131,12 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} RealmOS. Built on{" "}
-              <a
-                href="https://hedera.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#98ee2c] hover:underline"
-              >
-                Hedera
-              </a>
-              {" "}with ❤️
-            </div>
-            <div className="flex items-center space-x-6">
-              {footerLinks.legal.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-gray-400 hover:text-[#98ee2c] text-sm transition-colors"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-          
-          {/* Hackathon Badge */}
-          <div className="mt-6 text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#98ee2c]/10 to-[#7bc922]/10 border border-[#98ee2c]/30 rounded-full">
-              <span className="text-[#98ee2c] text-sm font-medium">
-                🏆 Built for Hedera Hackathon 2025
-              </span>
-            </div>
+        {/* Hackathon Badge */}
+        <div className="mt-12 pt-8 border-t border-gray-800 text-center">
+          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#98ee2c]/10 to-[#7bc922]/10 border border-[#98ee2c]/30 rounded-full">
+            <span className="text-[#98ee2c] text-sm font-medium">
+              🏆 Built for Hedera Hackathon 2025
+            </span>
           </div>
         </div>
       </div>
