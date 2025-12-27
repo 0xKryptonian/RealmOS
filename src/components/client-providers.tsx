@@ -9,6 +9,10 @@ import {
   HederaChainId,
 } from '@hashgraph/hedera-wallet-connect';
 import { LedgerId } from '@hashgraph/sdk';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { ThemeProvider } from 'next-themes';
+import { AnalyticsProvider } from '@/lib/analytics-provider';
+import { Toaster } from 'sonner';
 
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID ?? '';
 const queryClient = new QueryClient();
@@ -40,6 +44,11 @@ export function ClientProviders({ children }: ClientProvidersProps) {
   const [isReady, setIsReady] = useState(false);
   const [userAccountId, setUserAccountId] = useState<string | null>(null);
   const [sessionTopic, setSessionTopic] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Listen for account/session changes using events$
   useEffect(() => {
@@ -117,7 +126,14 @@ export function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <DAppConnectorContext.Provider value={{ dAppConnector, userAccountId, sessionTopic, disconnect, refresh }}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <TooltipProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <AnalyticsProvider>
+              {children}
+              <Toaster position="bottom-right" theme={mounted ? 'dark' : 'light'} />
+            </AnalyticsProvider>
+          </ThemeProvider>
+        </TooltipProvider>
       </QueryClientProvider>
     </DAppConnectorContext.Provider>
   );
